@@ -76,6 +76,7 @@ namespace NorskHandverk.Models
                 new OrderStatus { Id = 3, Name = "In Progress" },
                 new OrderStatus { Id = 4, Name = "Delivered" }
                 );
+            //Order-Customer 
             modelBuilder.Entity<Order>() 
                 .HasOne(o=>o.Customer)
                 .WithMany(c=>c.Orders)
@@ -101,6 +102,25 @@ namespace NorskHandverk.Models
                 
                
             //Cart-CartItem
+            modelBuilder.Entity<Cart>()
+                .HasMany(ci=>ci.Items)
+                .WithOne(i=>i.Cart)
+                .HasForeignKey(c=>c.CartId)
+                .OnDelete(DeleteBehavior.Restrict);
+            //CartItem-Product
+            modelBuilder.Entity<CartItem>()
+                .HasOne(c=>c.Product)
+                .WithMany()
+                .HasForeignKey(c=>c.ProductId)
+                .OnDelete (DeleteBehavior.Restrict);
+            //Cart-CartStatus 
+            modelBuilder.Entity<Cart>()
+                .HasOne(c=>c.CartStatus)
+                .WithMany()
+                .HasForeignKey (c=>c.CartStatusId)
+                .OnDelete(DeleteBehavior.Restrict);
+                
+
 
 
 
