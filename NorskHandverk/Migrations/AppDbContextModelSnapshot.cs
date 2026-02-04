@@ -22,6 +22,106 @@ namespace NorskHandverk.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("NorskHandverk.Models.CartModels.Cart", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CartNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("CartStatusId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CartStatusId");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("Carts");
+                });
+
+            modelBuilder.Entity("NorskHandverk.Models.CartModels.CartItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CartId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("SoftDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("VatRate")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CartId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("CartItems");
+                });
+
+            modelBuilder.Entity("NorskHandverk.Models.CartModels.CartStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CartStatuses");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "active"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "checkedOut"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "abondoned"
+                        });
+                });
+
             modelBuilder.Entity("NorskHandverk.Models.CustomerModels.Customer", b =>
                 {
                     b.Property<int>("Id")
@@ -239,6 +339,9 @@ namespace NorskHandverk.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -311,6 +414,215 @@ namespace NorskHandverk.Migrations
                     b.ToTable("Products");
                 });
 
+            modelBuilder.Entity("NorskHandverk.Models.TransactionModels.Transaction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<DateTime>("CreateadAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TransactionMethodId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TransactionNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("TransactionProviderId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TransactionStatusId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("TransactionMethodId");
+
+                    b.HasIndex("TransactionProviderId");
+
+                    b.HasIndex("TransactionStatusId");
+
+                    b.ToTable("Transactions");
+                });
+
+            modelBuilder.Entity("NorskHandverk.Models.TransactionModels.TransactionMethod", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TransactionMethods");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Method = "card"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Method = "vipps"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Method = "kontant"
+                        });
+                });
+
+            modelBuilder.Entity("NorskHandverk.Models.TransactionModels.TransactionProvider", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TransactionProviders");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Stripe"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Google Pay"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Vipps"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Klarna"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "Nets"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Name = "Manual"
+                        });
+                });
+
+            modelBuilder.Entity("NorskHandverk.Models.TransactionModels.TransactionStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TransactionStatuses");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Status = "pending"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Status = "success"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Status = "failed"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Status = "canceled"
+                        });
+                });
+
+            modelBuilder.Entity("NorskHandverk.Models.CartModels.Cart", b =>
+                {
+                    b.HasOne("NorskHandverk.Models.CartModels.CartStatus", "CartStatus")
+                        .WithMany()
+                        .HasForeignKey("CartStatusId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NorskHandverk.Models.CustomerModels.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CartStatus");
+
+                    b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("NorskHandverk.Models.CartModels.CartItem", b =>
+                {
+                    b.HasOne("NorskHandverk.Models.CartModels.Cart", "Cart")
+                        .WithMany("Items")
+                        .HasForeignKey("CartId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NorskHandverk.Models.ProductModels.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Cart");
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("NorskHandverk.Models.CustomerModels.Customer", b =>
                 {
                     b.HasOne("NorskHandverk.Models.CustomerModels.MemberShipStatus", "MemberShipStatus")
@@ -377,6 +689,46 @@ namespace NorskHandverk.Migrations
                     b.Navigation("Brand");
 
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("NorskHandverk.Models.TransactionModels.Transaction", b =>
+                {
+                    b.HasOne("NorskHandverk.Models.OrderModels.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("NorskHandverk.Models.TransactionModels.TransactionMethod", "TransactionMethod")
+                        .WithMany()
+                        .HasForeignKey("TransactionMethodId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NorskHandverk.Models.TransactionModels.TransactionProvider", "TransactionProvider")
+                        .WithMany()
+                        .HasForeignKey("TransactionProviderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NorskHandverk.Models.TransactionModels.TransactionStatus", "TransactionStatus")
+                        .WithMany()
+                        .HasForeignKey("TransactionStatusId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("TransactionMethod");
+
+                    b.Navigation("TransactionProvider");
+
+                    b.Navigation("TransactionStatus");
+                });
+
+            modelBuilder.Entity("NorskHandverk.Models.CartModels.Cart", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("NorskHandverk.Models.CustomerModels.Customer", b =>

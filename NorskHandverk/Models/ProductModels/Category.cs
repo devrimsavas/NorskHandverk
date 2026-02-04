@@ -22,6 +22,9 @@ namespace NorskHandverk.Models.ProductModels
         public string? UcpCategoryCode { get; set; }
         //one to many with product
         public ICollection<Product> Products=new List<Product>();
+        //soft delete 
+        public bool IsDeleted { get; set; } = false;
+
 
 
     }

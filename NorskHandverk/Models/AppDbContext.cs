@@ -3,6 +3,7 @@ using NorskHandverk.Models.ProductModels;
 using NorskHandverk.Models.CustomerModels;
 using NorskHandverk.Models.OrderModels;
 using NorskHandverk.Models.CartModels;
+using NorskHandverk.Models.TransactionModels;
 
 namespace NorskHandverk.Models
 {
@@ -25,6 +26,12 @@ namespace NorskHandverk.Models
         public DbSet<CartItem> CartItems { get; set; }  
         public DbSet<CartStatus> CartStatuses { get; set; }
 
+        //Transaction 
+        public DbSet<Transaction> Transactions { get; set; }
+        public DbSet<TransactionMethod> TransactionMethods { get; set; }
+        public DbSet<TransactionProvider> TransactionProviders { get; set; }    
+        public DbSet<TransactionStatus> TransactionStatuses { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //Category-Product 
@@ -34,15 +41,15 @@ namespace NorskHandverk.Models
                 .HasForeignKey(p => p.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict) //cascade disabled not to deleted products
                 .IsRequired();
+            //Category-Brand 
             modelBuilder.Entity<Brand>()
                 .HasMany(c => c.Products)
                 .WithOne(p => p.Brand)
                 .HasForeignKey(p=>p.BrandId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .IsRequired();
-            modelBuilder.Entity<Product>()
-                .Property(p => p.Price)
-                .HasPrecision(18, 2);
+            //Product has precision
+           
             modelBuilder.Entity<Product>()
                 .Property(p => p.Discount)
                 .HasPrecision(18, 2);
@@ -52,6 +59,10 @@ namespace NorskHandverk.Models
             modelBuilder.Entity<Category>()
                 .Property(c => c.DefaultVatRate)
                 .HasPrecision(5, 4);
+            //product price has precision
+            modelBuilder.Entity<Product>()
+                .Property (c => c.Price)
+                .HasPrecision(18, 2);    
 
             //unique email for customer
             modelBuilder.Entity<Customer>()
@@ -92,6 +103,14 @@ namespace NorskHandverk.Models
                 .WithMany()
                 .HasForeignKey(oi=>oi.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
+            //Cart-Status 
+            modelBuilder.Entity<CartStatus>()
+                .HasData(
+                new CartStatus { Id=1, Name="active"},
+                new CartStatus { Id=2, Name="checkedOut"},
+                new CartStatus { Id=3, Name="abondoned"}
+                );
+                
 
             //Cart -Customer 
             modelBuilder.Entity<Cart>()
@@ -119,7 +138,56 @@ namespace NorskHandverk.Models
                 .WithMany()
                 .HasForeignKey (c=>c.CartStatusId)
                 .OnDelete(DeleteBehavior.Restrict);
-                
+            //Transaction Amount precision
+            modelBuilder.Entity<Transaction>()
+                .Property(t => t.Amount)
+                .HasPrecision(18, 2);
+
+            //Transaction- TransactionMethod
+            modelBuilder.Entity<Transaction>()
+                 .HasOne(t => t.TransactionMethod)
+                 .WithMany()
+                 .HasForeignKey(t => t.TransactionMethodId)
+                 .OnDelete(DeleteBehavior.Restrict);
+            //Transaction-TransactionProvider
+            modelBuilder.Entity<Transaction>()
+                .HasOne(t=>t.TransactionProvider)
+                .WithMany()
+                .HasForeignKey(t=>t.TransactionProviderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            //Transaction-TransactionStatus
+            modelBuilder.Entity<Transaction>()
+                .HasOne(t=>t.TransactionStatus)
+                .WithMany()
+                .HasForeignKey(t=>t.TransactionStatusId)
+                .OnDelete(DeleteBehavior.Restrict);
+            //TransactionMethod populate with well-known methods
+            modelBuilder.Entity<TransactionMethod>()
+                .HasData(
+                new TransactionMethod { Id=1, Method="card"},
+                new TransactionMethod { Id=2, Method="vipps"},
+                new TransactionMethod { Id=3, Method="kontant"}
+                );
+            //TransactionStatus populate 
+            modelBuilder.Entity<TransactionStatus>()
+                .HasData(
+                new TransactionStatus { Id = 1, Status = "pending" },
+                new TransactionStatus { Id = 2, Status = "success" },
+                new TransactionStatus { Id = 3, Status = "failed" },
+                new TransactionStatus { Id = 4, Status = "canceled" }
+                );
+            modelBuilder.Entity<TransactionProvider>()
+                .HasData(
+                new TransactionProvider { Id = 1, Name = "Stripe" },
+                new TransactionProvider { Id = 2, Name = "Google Pay" },
+                new TransactionProvider { Id = 3, Name = "Vipps" },
+                new TransactionProvider { Id = 4, Name = "Klarna" },
+                new TransactionProvider { Id = 5, Name = "Nets" },
+                new TransactionProvider { Id = 6, Name = "Manual" }
+                );
+
+
 
 
 

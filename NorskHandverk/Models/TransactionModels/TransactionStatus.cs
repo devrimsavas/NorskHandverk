@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿//TransactionStatus.cs
+using System.ComponentModel.DataAnnotations;
 namespace NorskHandverk.Models.TransactionModels
 {
     public class TransactionStatus
