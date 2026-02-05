@@ -15,11 +15,18 @@ namespace NorskHandverk.Mappings
                 o => o.MapFrom(s => s.Brand.Name))
                 .ForMember(d => d.Status,
                 o => o.MapFrom(s => s.Status.ToString()));
+
+
+
+            CreateMap<ProductCreateDTO, Product>()
+                .ForMember(dest => dest.Title,
+                opt => opt.MapFrom(src => src.Title.Trim().ToLower()));
+
+            CreateMap<ProductUpdateDTO, Product>()
+                .ForMember(dest => dest.Title,
+                opt => opt.MapFrom(src => src.Title.Trim().ToLower()));
                 
                 
-               
-            CreateMap<ProductCreateDTO, Product>();
-            CreateMap<ProductUpdateDTO, Product>();
         }
     }
 }
