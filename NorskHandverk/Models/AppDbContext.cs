@@ -58,7 +58,7 @@ namespace NorskHandverk.Models
                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
             modelBuilder.Entity<Category>()
                 .Property(c => c.DefaultVatRate)
-                .HasPrecision(5, 4);
+                .HasPrecision(5, 2);
             //product price has precision
             modelBuilder.Entity<Product>()
                 .Property (c => c.Price)

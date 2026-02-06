@@ -332,8 +332,8 @@ namespace NorskHandverk.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("DefaultVatRate")
-                        .HasPrecision(5, 4)
-                        .HasColumnType("numeric(5,4)");
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)");
 
                     b.Property<string>("Description")
                         .IsRequired()
