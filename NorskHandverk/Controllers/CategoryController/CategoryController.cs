@@ -50,7 +50,7 @@ namespace NorskHandverk.Controllers.CategoryController
 
             return CreatedAtAction(nameof(GetCategories), new { id = newCategory.Id }, readDto);
         }
-        [HttpPut]
+        [HttpPut("{categoryId}")]
         //UPDATE A CATEGORY 
         public async Task<ActionResult<CategoryReadDTO>> UpdateCategory(int categoryId, UpdateCategoryDTO updateCategoryDTO)
         {
