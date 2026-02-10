@@ -38,6 +38,9 @@ namespace NorskHandverk.Models.CustomerModels
 
         //Order 
         public ICollection<Order> Orders { get; set; }
+
+        //soft delete
+        public bool IsDeleted { get; set; } = false;
           
 
     }

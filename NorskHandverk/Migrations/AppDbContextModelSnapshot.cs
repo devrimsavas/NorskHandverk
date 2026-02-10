@@ -138,6 +138,9 @@ namespace NorskHandverk.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
                     b.Property<int>("MemberShipStatusId")
                         .HasColumnType("integer");
 

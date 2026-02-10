@@ -12,6 +12,7 @@ namespace NorskHandverk.DTOs.CustomerDTOs
         public string TelephoneNumber { get; set; }
 
         public string MemberShipStatus { get; set; }
+        public bool IsDeleted { get; set; }
 
     }
 }

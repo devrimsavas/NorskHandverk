@@ -7,6 +7,7 @@ using NorskHandverk.DTOs.CustomerDTOs;
 using NorskHandverk.Mappings;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 
 namespace NorskHandverk.Controllers.CustomerController
@@ -66,8 +67,70 @@ namespace NorskHandverk.Controllers.CustomerController
             var readDTO=_mapper.Map<ReadCustomerDTO>(newCustomer);
             return CreatedAtAction(nameof(GetCustomerById), new { id = readDTO.Id }, readDTO);
 
+        }
+        //UPDATE CUSTOMER 
+        [HttpPut("{customerId}")]
+        public async Task<ActionResult<ReadCustomerDTO>> UpdateCustomer(UpdateCustomerDTO updateCustomerDTO,int customerId)
+        {
+            //find existed user 
+            var existedUser = await _dbContext.Customers.Include(c=>c.MemberShipStatus).FirstOrDefaultAsync(c => c.Id == customerId);
+            if (existedUser==null)
+            {
+                return NotFound(new {Message="Customer is not found"});
+            }
+            //check email control 
+            if (!string.IsNullOrEmpty(updateCustomerDTO.Email))
+            {
+                var emailInUse=await _dbContext.Customers.AnyAsync(c=>c.Email==updateCustomerDTO.Email && c.Id!=customerId);
+                if ( emailInUse) 
+                {
+                    return Conflict(new { Message = "Email is already in use by another customer" });
+                    
+                }
+
+            }
+            //password
+            if (!string.IsNullOrEmpty(updateCustomerDTO.Password))
+            {
+                var passwordHasher = new PasswordHasher<Customer>();
+                existedUser.PasswordHash=passwordHasher.HashPassword(existedUser,updateCustomerDTO.Password);   
+            }
+            existedUser.Name = updateCustomerDTO.Name ?? existedUser.Name;
+            existedUser.Surname=updateCustomerDTO.Surname ?? existedUser.Surname;
+            existedUser.Email=updateCustomerDTO?.Email ?? existedUser.Email;
+            existedUser.Address=updateCustomerDTO?.Address ?? existedUser.Address;
+            existedUser.TelephoneNumber=updateCustomerDTO?.TelephoneNumber ?? existedUser.TelephoneNumber;
+
+            
+            await _dbContext.SaveChangesAsync();
+            var readDTO=_mapper.Map<ReadCustomerDTO>(existedUser);
+            return Ok(readDTO);
+
 
         }
+        //SOFT DELETE 
+        [HttpDelete("{customerId}")]
+        public async Task<ActionResult<ReadCustomerDTO>> DeleteCustomer(int customerId)
+        {
+            //check id 
+            var existedCustomer = await _dbContext.Customers.Include(c=>c.Orders).FirstOrDefaultAsync(c => c.Id == customerId);
+            if (existedCustomer == null)
+            {
+                return NotFound(new { Message = "Customer does not exist" });
+            }
+            //check if customer has cart, order with product
+            if (existedCustomer.Orders.Count!=0)
+            {
+                return Conflict(new { Message = "The customer has an order. Cannot be deleted " });
+            }
+            //soft delete
+            existedCustomer.IsDeleted = true;
+            await _dbContext.SaveChangesAsync();
+            var readDto=_mapper.Map<ReadCustomerDTO>(existedCustomer);
+            return Ok(readDto);
+
+        }
+
       
 
     }
