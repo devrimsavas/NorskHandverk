@@ -1,0 +1,19 @@
+﻿using NorskHandverk.Models.CartModels;
+using NorskHandverk.DTOs.CartDTOs;
+using AutoMapper;
+
+namespace NorskHandverk.Mappings
+{
+    public class CartProfile:Profile
+    {
+        public CartProfile()
+        {
+            //find Name field in CartStatus and copy to the statusName in readCardDTO 
+            CreateMap<Cart, ReadCartDTO>()
+            .ForMember(dest => dest.StatusName,
+            opt => opt.MapFrom(src => src.CartStatus.Name));
+            CreateMap<CartItem, ReadCartItemDTO>();
+        }
+      
+    }
+}
