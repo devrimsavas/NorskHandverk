@@ -158,11 +158,60 @@ namespace NorskHandverk.Controllers.CartController
             var readDTO=_mapper.Map<ReadCartDTO>(cartToReturn);
             return Ok(readDTO);
 
-            
-            
-            
+        }
+        //REMOVE ITEM FROM EXISTED CART 
+        [HttpPost("removeitem")]
+
+        public async Task<ActionResult<ReadCartDTO>> RemoveItem(RemoveCartItemDTO removeCartItemDTO )
+        {
+            //find existed cart
+            var existedCart=await _dbContext.Carts.Include(c=>c.CartStatus).Include(c=>c.Items).ThenInclude(i=>i.Product).FirstOrDefaultAsync(c=>c.CustomerId==removeCartItemDTO.CustomerId && c.CartStatus.Name=="active");
+            if (existedCart==null)
+            {
+                return NotFound(new { Message = "Active cart not found" });
+            }
+            //item
+            var itemToRemove=existedCart.Items.FirstOrDefault(i=>i.ProductId==removeCartItemDTO.ProductId);
+            if (itemToRemove == null)
+            {
+                return NotFound(new { Message = "Item not found in cart" });
+            }
+            //quantity check
+            //more than existed cart
+            if (itemToRemove.Quantity<removeCartItemDTO.QuantityToRemove)
+            {
+                return BadRequest(new { Message = $"You can remove maximum  {itemToRemove.Quantity} of item: ${itemToRemove.ProductName}" });
+
+            }
+            //same amount delete item
+            else if (itemToRemove.Quantity==removeCartItemDTO.QuantityToRemove)
+            {
+                //add to stock
+                itemToRemove.Product.Quantity += removeCartItemDTO.QuantityToRemove;
+                //stock status
+                itemToRemove.Product.Status = Status.Available;
+                //remove from Cart
+                _dbContext.CartItems.Remove(itemToRemove);
 
 
+            }
+            //quantity to remove is less than quantity in cart 
+            else
+            {
+
+                //remove amount from cart 
+                itemToRemove.Product.Quantity += removeCartItemDTO.QuantityToRemove;
+                //status check 
+                itemToRemove.Product.Status=Status.Available;   
+                //remove amount from cart
+                itemToRemove.Quantity-=removeCartItemDTO.QuantityToRemove;
+
+            }
+            //save 
+            await _dbContext.SaveChangesAsync();
+            //return existed cart update
+            var readDTO=_mapper.Map<ReadCartDTO>(existedCart);
+            return Ok(readDTO);
 
 
         }
