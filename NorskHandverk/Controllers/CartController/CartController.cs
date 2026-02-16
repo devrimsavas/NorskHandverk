@@ -213,6 +213,90 @@ namespace NorskHandverk.Controllers.CartController
             var readDTO=_mapper.Map<ReadCartDTO>(existedCart);
             return Ok(readDTO);
 
+        }
+
+        //CLEAR CART 
+        [HttpPost("clearcart/{customerId}")]
+        public async Task<ActionResult<ReadCartDTO>> ClearCart(int customerId)
+        {
+            //find cart
+            var cart = await _dbContext.Carts.Include(c => c.CartStatus).Include(c => c.Items).ThenInclude(i => i.Product)
+                .FirstOrDefaultAsync(c => c.CustomerId == customerId && c.CartStatus.Name == "active");
+
+            //check 
+            if (cart==null)
+            {
+                return NotFound(new { Message = "Cart does not exist" });
+            }
+            //iterate and find products and add to stock 
+            foreach (var item in cart.Items)
+            {
+                int quantity=item.Quantity;
+                //added to stock products
+                item.Product.Quantity += quantity;
+                //status 
+                item.Product.Status=Status.Available;                
+            }
+            //remove all items from cart
+            _dbContext.CartItems.RemoveRange(cart.Items); 
+            await _dbContext.SaveChangesAsync();
+            //return dto 
+            var readDTO = _mapper.Map<ReadCartDTO>(cart);
+
+            return Ok(readDTO);
+        }
+        //UPDATE CART 
+        [HttpPost("updatecart")]
+        public async Task<ActionResult<ReadCartDTO>> UpdateCart(UpdateCartItemDTO updateCartItemDTO)
+        {
+            //find cart 
+            var cart = await _dbContext.Carts.Include(c => c.CartStatus).Include(c => c.Items).ThenInclude(i => i.Product)
+                .FirstOrDefaultAsync(c => c.CustomerId == updateCartItemDTO.CustomerId && c.CartStatus.Name=="active");
+            if (cart == null) 
+            {
+                return NotFound(new { Message = "Cart does not exist" });
+            };
+            var product=cart.Items.FirstOrDefault(c=>c.ProductId==updateCartItemDTO.ProductId);
+            if (product == null)
+            {
+                return NotFound(new { Message = "Item not found in your cart" });
+            }
+            //existed quantity;
+            var existedQuantity=product.Quantity;
+            //delta + for add - for remove items 
+            var delta = updateCartItemDTO.NewQuantity - existedQuantity;
+            if (delta > 0)
+            {
+                //stock check 
+                if (product.Product.Quantity<delta)
+                {
+                    return BadRequest(new { Message = "Not enough stock available" });
+                }
+                //stock 
+                product.Product.Quantity -= delta; // removed items from stock 
+
+            }
+            else if (delta<0)
+            {
+                product.Product.Quantity -= delta;
+                //product avaiable 
+                product.Product.Status = Status.Available;
+            }
+            //update customer cart
+            product.Quantity = updateCartItemDTO.NewQuantity;
+            //remove item
+            if (product.Quantity ==0)
+            {
+                _dbContext.CartItems.Remove(product);
+
+            }
+            await _dbContext.SaveChangesAsync();
+            var readDTO=_mapper.Map<ReadCartDTO>(cart);
+
+            return Ok(readDTO);
+            
+
+
 
         }
 
