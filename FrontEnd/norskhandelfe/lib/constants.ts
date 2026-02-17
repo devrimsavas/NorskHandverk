@@ -1,0 +1,12 @@
+//BASE
+const BASE_API_URL=process.env.NEXT_PUBLIC_BASE_API_URL 
+//products
+export const API_GET_ALL_PRODUCTS=`${BASE_API_URL}/product`;
+//customers
+export const API_GET_ALL_CUSTOMERS=`${BASE_API_URL}/customer`;
+
+//categories 
+export const API_GET_ALL_CATEGORIES=`${BASE_API_URL}/Category`;
+
+//Brands 
+export const API_GET_ALL_BRANDS=`${BASE_API_URL}/brand`;
