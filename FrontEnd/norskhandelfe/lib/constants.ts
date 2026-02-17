@@ -8,8 +8,13 @@ export const API_GET_ALL_CUSTOMERS=`${BASE_API_URL}/customer`;
 //categories 
 export const API_GET_ALL_CATEGORIES=`${BASE_API_URL}/Category`;
 
-//Brands 
+//BRANDS
+//get brands
 export const API_GET_ALL_BRANDS=`${BASE_API_URL}/brand`;
+//post a brand
+export const API_CREATE_BRAND=`${BASE_API_URL}/brand`;
+
+
 
 //Carts
 export const API_GET_ALL_CARTS=`${BASE_API_URL}/cart`

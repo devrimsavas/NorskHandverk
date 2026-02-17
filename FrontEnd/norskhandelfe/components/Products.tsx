@@ -40,58 +40,54 @@ const Products = () => {
     },[])
 
     return (
-        <div className="w-full bg-gray-150 p-8">
-            <div className="w-full">
+  <div className="w-full overflow-x-auto rounded-xl border border-gray-200 shadow-sm bg-white p-4">
 
-                <div className="w-full overflow-x-auto rounded-xl border border-gray-200 shadow bg-amber-300">
-                    <h1 className="text-black">PRODUCTS </h1>
+    <table className="min-w-full text-left border-collapse text-sm">
 
-                    <table className="min-w-full text-left border-collapse text-xs">
+      <thead className="bg-gray-100 text-gray-800 uppercase font-semibold">
+        <tr>
+          <th className="px-3 py-2">ID</th>
+          <th className="px-3 py-2">Title</th>
+          <th className="px-3 py-2">Description</th>
+          <th className="px-3 py-2">Price</th>
+          <th className="px-3 py-2">Image</th>
+          <th className="px-3 py-2">Price Inc Vat</th>
+          <th className="px-3 py-2">Quantity</th>
+          <th className="px-3 py-2">Category</th>
+          <th className="px-3 py-2">Brand</th>
+          <th className="px-3 py-2">Date</th>
+          <th className="px-3 py-2">Status</th>
+          <th className="px-3 py-2">Deleted</th>
+        </tr>
+      </thead>
 
-                        <thead className="bg-gray-100 text-black uppercase font-semibold">
-                            <tr>
-                                <th className="px-2 py-2">ID</th>
-                                <th className="px-2 py-2">Title</th>
-                                <th className="px-2 py-2">Description</th>
-                                <th className="px-2 py-2">Price</th>
-                                <th className="px-2 py-2">Image</th>
-                                <th className="px-2 py-2">Price Inc Vat</th>
-                                <th className="px-2 py-2">Quantity</th>
-                                <th className="px-2 py-2">Category</th>
-                                <th className="px-2 py-2">Brand</th>
-                                <th className="px-2 py-2">Date</th>
-                                <th className="px-2 py-2">Status</th>
-                                <th className="px-2 py-2">Deleted</th>
-                            </tr>
-                        </thead>
+      <tbody className="divide-y divide-gray-200 text-gray-800">
+        {products.map((product)=>(
+          <tr key={product.id} className="hover:bg-gray-50 transition">
 
-                        <tbody className="divide-y divide-gray-200 text-black">
-                            {products.map((product)=>(
-                                <tr key={product.id} className="hover:bg-gray-100 transition">
+            <td className="px-3 py-2 font-medium">#{product.id}</td>
+            <td className="px-3 py-2 font-semibold">{product.title}</td>
+            <td className="px-3 py-2 max-w-xs truncate">{product.description}</td>
+            <td className="px-3 py-2 font-semibold text-emerald-600">
+              ${product.price}
+            </td>
+            <td className="px-3 py-2 truncate">{product.productImage}</td>
+            <td className="px-3 py-2">{product.priceIncVat}</td>
+            <td className="px-3 py-2">{product.quantity}</td>
+            <td className="px-3 py-2">{product.categoryName}</td>
+            <td className="px-3 py-2">{product.brandName}</td>
+            <td className="px-3 py-2">{product.dateAdded}</td>
+            <td className="px-3 py-2">{product.status ? "true" : "false"}</td>
+            <td className="px-3 py-2">{product.isDeleted ? "yes" : "no"}</td>
 
-                                    <td className="px-2 py-2 font-medium">#{product.id}</td>
-                                    <td className="px-2 py-2 font-semibold">{product.title}</td>
-                                    <td className="px-2 py-2 max-w-xs truncate">{product.description}</td>
-                                    <td className="px-2 py-2 text-emerald-600 font-bold">${product.price}</td>
-                                    <td className="px-2 py-2 truncate">{product.productImage}</td>
-                                    <td className="px-2 py-2">{product.priceIncVat}</td>
-                                    <td className="px-2 py-2">{product.quantity}</td>
-                                    <td className="px-2 py-2">{product.categoryName}</td>
-                                    <td className="px-2 py-2">{product.brandName}</td>
-                                    <td className="px-2 py-2">{product.dateAdded}</td>
-                                    <td className="px-2 py-2">{product.status ? "true" : "false"}</td>
-                                    <td className="px-2 py-2">{product.isDeleted ? "yes" : "no"}</td>
+          </tr>
+        ))}
+      </tbody>
 
-                                </tr>
-                            ))}
-                        </tbody>
+    </table>
+  </div>
+);
 
-                    </table>
-
-                </div>
-            </div>
-        </div>
-    )
 }
 
 export default Products;
