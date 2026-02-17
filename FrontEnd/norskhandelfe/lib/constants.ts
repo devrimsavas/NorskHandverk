@@ -10,3 +10,6 @@ export const API_GET_ALL_CATEGORIES=`${BASE_API_URL}/Category`;
 
 //Brands 
 export const API_GET_ALL_BRANDS=`${BASE_API_URL}/brand`;
+
+//Carts
+export const API_GET_ALL_CARTS=`${BASE_API_URL}/cart`

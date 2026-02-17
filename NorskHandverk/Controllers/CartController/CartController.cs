@@ -154,8 +154,13 @@ namespace NorskHandverk.Controllers.CartController
             }
             //save changing 
             await _dbContext.SaveChangesAsync();
+            //CART STATUS from database
+            await _dbContext.Entry(cartToReturn).Reference(c => c.CartStatus).LoadAsync();
+
+
             //return referense DTO 
             var readDTO=_mapper.Map<ReadCartDTO>(cartToReturn);
+            
             return Ok(readDTO);
 
         }
