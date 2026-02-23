@@ -18,3 +18,10 @@ export const API_CREATE_BRAND=`${BASE_API_URL}/brand`;
 
 //Carts
 export const API_GET_ALL_CARTS=`${BASE_API_URL}/cart`
+
+
+
+
+//Orders
+
+export const API_GET_ALL_ORDERS=`${BASE_API_URL}/order`
