@@ -22,6 +22,8 @@ public class Order
 
     //order items 
     public ICollection<OrderItem> Items { get; set; }=new List<OrderItem>();    
+    //order date
+    public DateTime OrderDate { get; set; }
 
 
 
