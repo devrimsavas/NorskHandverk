@@ -1,12 +1,17 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using NorskHandverk.Models;
-using NorskHandverk.Models.ProductModels;
-using NorskHandverk.Models.OrderModels;
-using NorskHandverk.Models.CustomerModels;
+using Microsoft.EntityFrameworkCore;
 using NorskHandverk.DTOs.OrderDTOs;
-using AutoMapper;
+using NorskHandverk.Models;
+using NorskHandverk.Models.CustomerModels;
+using NorskHandverk.Models.OrderModels;
+using NorskHandverk.Models.ProductModels;
+using NorskHandverk.Services;
+using Stripe;
+
 using System.Reflection.Metadata.Ecma335;
+using System.Transactions;
+using MyOrder = NorskHandverk.Models.OrderModels.Order;
 
 namespace NorskHandverk.Controllers.OrderController
 {
@@ -16,10 +21,20 @@ namespace NorskHandverk.Controllers.OrderController
     {
         private readonly AppDbContext _dbContext;
         private readonly IMapper _mapper;
-        public OrderController(AppDbContext dbContext, IMapper mapper) 
+        //adding payment service for stripe
+        private readonly IPaymentService _paymentService;
+        private readonly IConfiguration _configuration;
+        private readonly IOrderService _orderService;
+        public OrderController(AppDbContext dbContext, IMapper mapper,IPaymentService paymentService, IConfiguration configuration, IOrderService orderService) 
         { 
             _dbContext = dbContext;
             _mapper = mapper;
+            //payment service update
+            _paymentService=paymentService;
+            _configuration = configuration;
+            _orderService = orderService;
+            
+            
         }
         [HttpGet]
         //GET ALL ORDERS 
@@ -50,13 +65,36 @@ namespace NorskHandverk.Controllers.OrderController
 
         }
         //CHECK OUT 
+        //updated with payment service instead of direct 
         [HttpPost("checkout/{customerId}")]
-        public async Task<ActionResult<ReadOrderDTO>> Checkout(int customerId)
+        public async Task<ActionResult<object>> Checkout(int customerId)
         {
-            // Find the active cart
+            // 1. FIRST CHECK: Does the user already have an order awaiting payment?
+            // This prevents creating new orders and new Stripe intents on page refresh/retry.
+            var existingOrder = await _dbContext.Orders
+                .Include(o => o.Items)
+                .Include(o => o.OrderStatus)
+                .FirstOrDefaultAsync(o => o.CustomerId == customerId && o.OrderStatusId == 5);
+
+            if (existingOrder != null && !string.IsNullOrEmpty(existingOrder.PaymentIntentId))
+            {
+                // Use Stripe Service directly to fetch the existing intent
+                var service = new Stripe.PaymentIntentService();
+                var intent = await service.GetAsync(existingOrder.PaymentIntentId);
+
+                // If the intent is still valid for payment, reuse it
+                if (intent.Status != "canceled" && intent.Status != "succeeded")
+                {
+                    var existingDto = _mapper.Map<ReadOrderDTO>(existingOrder);
+                    return Ok(new { Order = existingDto, ClientSecret = intent.ClientSecret });
+                }
+                // If it was canceled, the code will fall through and create a new one below
+            }
+
+            // 2. ONLY look for ACTIVE carts - (checkedOut carts are handled by the block above)
             var cart = await _dbContext.Carts
-                .Include(c => c.Items)
-                .ThenInclude(i => i.Product)
+                .Include(c => c.CartStatus)
+                .Include(c => c.Items).ThenInclude(i => i.Product)
                 .FirstOrDefaultAsync(c => c.CustomerId == customerId && c.CartStatus.Name == "active");
 
             if (cart == null || !cart.Items.Any())
@@ -64,51 +102,58 @@ namespace NorskHandverk.Controllers.OrderController
                 return BadRequest(new { Message = "Active cart not found or empty." });
             }
 
-            
-            var checkedOutStatus = await _dbContext.CartStatuses.FirstOrDefaultAsync(s => s.Name == "checkedOut");
-            var orderedStatus = await _dbContext.OrderStatuses.FirstOrDefaultAsync(s => s.Name == "Ordered");
+            // 3. Calculate total
+            decimal totalAmount = cart.Items.Sum(i => (i.UnitPrice * i.Quantity) * (1 + i.VatRate));
+            long amountInOere = (long)(Math.Round(totalAmount, 2) * 100);
 
-            if (checkedOutStatus == null || orderedStatus == null)
-            {
-                return BadRequest(new { Message = "Status definitions are missing in DB." });
-            }
+            // 4. Create NEW Stripe PaymentIntent
+            var paymentIntent = await _paymentService.CreatePaymentIntent(amountInOere);
 
-            // Create New Order
-            var order = new Order
+            // 5. Create New Order
+            var order = new MyOrder
             {
                 CustomerId = customerId,
                 OrderNumber = "ORD-" + DateTime.Now.Ticks,
                 OrderDate = DateTime.UtcNow,
-                OrderStatusId = orderedStatus.Id,
-                Items = new List<OrderItem>()
+                OrderStatusId = 5,
+                PaymentIntentId = paymentIntent.Id,
+                Items = cart.Items.Select(ci => new OrderItem
+                {
+                    ProductId = ci.ProductId,
+                    ProductName = ci.ProductName,
+                    UnitPrice = ci.UnitPrice,
+                    VatRate = ci.VatRate,
+                    Quantity = ci.Quantity
+                }).ToList()
             };
 
-            // Snapshot prices and transfer items
-            foreach (var cartItem in cart.Items)
-            {
-                var orderItem = new OrderItem
-                {
-                    ProductId = cartItem.ProductId,
-                    ProductName = cartItem.ProductName,
-                    UnitPrice = cartItem.UnitPrice,
-                    VatRate = cartItem.VatRate,
-                    Quantity = cartItem.Quantity
-                };
-                order.Items.Add(orderItem);
-            }
-
-            // Update Cart Status to checkedOut (Id=2)
+            // 6. Update cart status to checkedOut
+            var checkedOutStatus = await _dbContext.CartStatuses.FirstOrDefaultAsync(s => s.Name == "checkedOut");
             cart.CartStatusId = checkedOutStatus.Id;
 
             _dbContext.Orders.Add(order);
+
+            // 7. Add transaction record
+            _dbContext.Transactions.Add(new NorskHandverk.Models.TransactionModels.Transaction
+            {
+                TransactionNumber = "TRX-" + DateTime.Now.Ticks,
+                Amount = totalAmount,
+                Currency = "NOK",
+                Order = order,
+                TransactionMethodId = 1,
+                TransactionProviderId = 1,
+                TransactionStatusId = 1,
+                CreateadAt = DateTime.UtcNow
+            });
+
             await _dbContext.SaveChangesAsync();
 
-            // Explicitly load navigation properties for the DTO
+            // 8. Load for DTO
             await _dbContext.Entry(order).Reference(o => o.OrderStatus).LoadAsync();
             await _dbContext.Entry(order).Collection(o => o.Items).LoadAsync();
 
             var readDTO = _mapper.Map<ReadOrderDTO>(order);
-            return Ok(readDTO);
+            return Ok(new { Order = readDTO, ClientSecret = paymentIntent.ClientSecret });
         }
 
         //CANCEL ORDER 
@@ -154,6 +199,48 @@ namespace NorskHandverk.Controllers.OrderController
             await _dbContext.SaveChangesAsync();
 
             return Ok(new { Message = $"Order {order.OrderNumber} canceled and stocks updated." });
+        }
+
+        //WEBHOOK 
+        [HttpPost("webhook")]
+        public async Task<IActionResult> StripeWebHook()
+        {
+            var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
+            try
+            {
+                // Verifying the event with the secret key from terminal
+                var stripeEvent = EventUtility.ConstructEvent(
+                    json,
+                    Request.Headers["Stripe-Signature"],
+                    _configuration["Stripe:WebhookSecret"]
+                );
+
+                // Handling the success payment event 
+                if (stripeEvent.Type == Stripe.EventTypes.PaymentIntentSucceeded)
+                {
+                    var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
+
+                    if (paymentIntent != null)
+                    {
+                        // CRITICAL: Using the exact name from your interface 'UpdateORderAfterPayment'
+                        await _orderService.UpdateORderAfterPayment(paymentIntent.Id);
+                    }
+                }
+
+                return Ok();
+            }
+            catch (StripeException e)
+            {
+                // Using 'e' to log or debug if needed
+                Console.WriteLine($"Stripe Webhook Error: {e.Message}");
+                return BadRequest();
+            }
+            catch (Exception ex)
+            {
+                // Using 'ex' to log general errors
+                Console.WriteLine($"General Webhook Error: {ex.Message}");
+                return StatusCode(500);
+            }
         }
 
 

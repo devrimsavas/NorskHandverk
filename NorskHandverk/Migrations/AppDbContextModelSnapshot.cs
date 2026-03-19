@@ -228,6 +228,9 @@ namespace NorskHandverk.Migrations
                     b.Property<int>("OrderStatusId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("PaymentIntentId")
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
@@ -309,6 +312,11 @@ namespace NorskHandverk.Migrations
                         {
                             Id = 4,
                             Name = "Delivered"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "Awaiting Payment"
                         });
                 });
 

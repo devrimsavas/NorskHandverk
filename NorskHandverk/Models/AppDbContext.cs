@@ -85,7 +85,8 @@ namespace NorskHandverk.Models
                 new OrderStatus { Id = 1, Name = "Canceled" },
                 new OrderStatus { Id = 2, Name = "Ordered" },
                 new OrderStatus { Id = 3, Name = "In Progress" },
-                new OrderStatus { Id = 4, Name = "Delivered" }
+                new OrderStatus { Id = 4, Name = "Delivered" },
+                new OrderStatus { Id=5,Name="Awaiting Payment"}
                 );
             //Order-Customer 
             modelBuilder.Entity<Order>() 

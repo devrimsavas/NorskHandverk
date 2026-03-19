@@ -15,13 +15,14 @@ export const API_GET_ALL_BRANDS=`${BASE_API_URL}/brand`;
 export const API_CREATE_BRAND=`${BASE_API_URL}/brand`;
 
 
-
-//Carts
+//CARTS 
 export const API_GET_ALL_CARTS=`${BASE_API_URL}/cart`
 
+//ORDERS 
 
-
-
-//Orders
-
+//get all orders 
 export const API_GET_ALL_ORDERS=`${BASE_API_URL}/order`
+
+//checkout 
+export const API_CHECK_OUT_ORDER=(customerId:number)=> `${BASE_API_URL}/order/checkout/${customerId}`
+

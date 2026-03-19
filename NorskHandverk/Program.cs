@@ -2,10 +2,20 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using NorskHandverk.Models;
 using NorskHandverk.Models.ProductModels;
+using NorskHandverk.Services;
+
+//stripe 
+using Stripe;
+
 
 
 
 var builder = WebApplication.CreateBuilder(args);
+//get stripe key
+StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
+builder.Services.AddScoped<IPaymentService, StripeService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+
 
 builder.Services.AddCors(options =>
 { options.AddPolicy("AllowAll", policy =>

@@ -25,6 +25,8 @@ public class Order
     //order date
     public DateTime OrderDate { get; set; }
 
+    public string? PaymentIntentId { get; set; }    
+
 
 
     
