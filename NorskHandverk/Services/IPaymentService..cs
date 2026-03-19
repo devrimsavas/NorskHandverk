@@ -5,7 +5,7 @@ namespace NorskHandverk.Services
 {
     public interface IPaymentService
     {
-        // string yerine PaymentIntent dönüyoruz
+        // return PaymentIntent
         Task<PaymentIntent> CreatePaymentIntent(long amount);
     }
 }

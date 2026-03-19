@@ -20,7 +20,7 @@ namespace NorskHandverk.Services
                 PaymentMethodTypes = new List<string> { "card" },
             };
             var service = new PaymentIntentService();
-            // Direkt intent nesnesini dönüyoruz
+            // intent object
             return await service.CreateAsync(options);
         }
 

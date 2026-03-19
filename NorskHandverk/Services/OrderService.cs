@@ -14,14 +14,14 @@ namespace NorskHandverk.Services
             _dbContext = dbContext;
         }
 
-        // Interface'deki isminle (UpdateORderAfterPayment) birebir aynı
+        
         public async Task UpdateORderAfterPayment(string paymentIntentId)
         {
-            // 1. Önce siparişi bul (Sade sorgu)
+            // find order 
             var order = await _dbContext.Orders
                 .FirstOrDefaultAsync(o => o.PaymentIntentId == paymentIntentId);
 
-            // EĞER SİPARİŞ BULUNAMAZSA: 500 HATASI VERME, SADECE LOG AT
+            // if there is not any order 
             if (order == null)
             {
                 Console.WriteLine($"!!! Error  '{paymentIntentId}' ID' does not exist. It might come after webhook.");
@@ -37,12 +37,12 @@ namespace NorskHandverk.Services
 
             if (cart != null)
             {
-                // Sepeti 'abandoned' (3) statüsüne çekiyoruz ki Frontend'den gitsin
+                //  'abandoned' (3) status (need to change later)
                 cart.CartStatusId = 3;
             }
             else
             {
-                Console.WriteLine($"!!! UYARI: Müşteri {order.CustomerId} için 'checkedOut' statüsünde sepet bulunamadı.");
+                Console.WriteLine($"!!! Warning: Custoer  {order.CustomerId} has not any cart with  'checkedOut' status.");
             }
 
             await _dbContext.SaveChangesAsync();

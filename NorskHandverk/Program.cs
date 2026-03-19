@@ -3,12 +3,8 @@ using Microsoft.OpenApi.Models;
 using NorskHandverk.Models;
 using NorskHandverk.Models.ProductModels;
 using NorskHandverk.Services;
-
 //stripe 
 using Stripe;
-
-
-
 
 var builder = WebApplication.CreateBuilder(args);
 //get stripe key
@@ -18,12 +14,12 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 
 
 builder.Services.AddCors(options =>
-{ options.AddPolicy("AllowAll", policy =>
-{
-    policy.AllowAnyHeader()
-    .AllowAnyMethod()
-    .AllowAnyOrigin();
-});
+    { options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowAnyOrigin();
+    });
 
 });
 
@@ -33,7 +29,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 );
 
 // Add services to the container.
-
 builder.Services.AddControllers();
 //Add AutoMap
 builder.Services.AddAutoMapper(typeof(Program));
