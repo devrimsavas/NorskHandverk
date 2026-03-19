@@ -1,0 +1,19 @@
+
+example appsettings.json 
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "ConnectionStrings": {
+    "DefaultConnection": <"Host=<your-host>;Port=<PORT>;Database=<databasename>;Username=postgres;Password=<your-password>">
+  },
+  "Stripe": {
+    "SecretKey": <your-stripe-secret-key>,
+    "PublishableKey": "<your-stripe-public-key>,
+    "WebhookSecret": <webhook-secret>
+  }
+}

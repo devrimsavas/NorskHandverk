@@ -102,10 +102,11 @@ const Cart = () => {
                 </td>
                 <td className="px-3 py-2 text-right">
                   {/* Action button appears only for active carts */}
-                  {cart.statusName === "active"   && (
+
+                  {(cart.statusName === "active" || cart.statusName==="checkedOut")  && (
                     <CheckOutButton
                       text={
-                        loadingId === cart.customerId ? "Wait..." : "Pay Now"
+                        loadingId === cart.customerId ? "Wait..." :  cart.statusName === "active" ? "Checkout & Pay" : "Resume Payment"
                       }
                       onClick={() => handleCheckout(cart.customerId)}
                       color="accent"
