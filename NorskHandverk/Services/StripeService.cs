@@ -40,6 +40,11 @@ namespace NorskHandverk.Services
             await service.CreateAsync(options);
         }
 
+        public async Task<PaymentIntent> GetPaymentIntent(string paymentIntentId)
+        {
+            var service = new PaymentIntentService();
+            return await service.GetAsync(paymentIntentId);
+        }
 
 
     }

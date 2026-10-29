@@ -12,6 +12,7 @@ namespace NorskHandverk.Services
 
         // Refunds the full amount of a paid payment intent
         Task RefundPayment(string paymentIntentId);
+        Task<PaymentIntent> GetPaymentIntent(string paymentIntentId);
 
     }
 }

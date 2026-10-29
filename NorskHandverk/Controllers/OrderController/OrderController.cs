@@ -80,17 +80,44 @@ namespace NorskHandverk.Controllers.OrderController
 
             if (existingOrder != null && !string.IsNullOrEmpty(existingOrder.PaymentIntentId))
             {
-                // Use Stripe Service directly to fetch the existing intent
-                var service = new Stripe.PaymentIntentService();
-                var intent = await service.GetAsync(existingOrder.PaymentIntentId);
+                var intent = await _paymentService.GetPaymentIntent(existingOrder.PaymentIntentId);
 
-                // If the intent is still valid for payment, reuse it
+                // Still payable: reuse the same intent instead of creating a new one
                 if (intent.Status != "canceled" && intent.Status != "succeeded")
                 {
                     var existingDto = _mapper.Map<ReadOrderDTO>(existingOrder);
                     return Ok(new { Order = existingDto, ClientSecret = intent.ClientSecret });
                 }
-                // If it was canceled, the code will fall through and create a new one below
+
+                // Paid, but the webhook never reached us: update the order now
+                if (intent.Status == "succeeded")
+                {
+                    await _orderService.UpdateORderAfterPayment(intent.Id);
+                    return Conflict(new { Message = $"Order {existingOrder.OrderNumber} has already been paid." });
+                }
+
+                // Canceled: close the stale order and reopen its cart so a new payment can start
+                existingOrder.OrderStatusId = (int)OrderStatusType.Canceled;
+
+                var staleTransaction = await _dbContext.Transactions
+                    .FirstOrDefaultAsync(t => t.OrderId == existingOrder.Id && t.TransactionStatusId == (int)TransactionStatusType.Pending);
+
+                if (staleTransaction != null)
+                {
+                    staleTransaction.TransactionStatusId = (int)TransactionStatusType.Canceled;
+                }
+
+                if (existingOrder.CartId.HasValue)
+                {
+                    var oldCart = await _dbContext.Carts.FindAsync(existingOrder.CartId.Value);
+                    if (oldCart != null)
+                    {
+                        oldCart.CartStatusId = (int)CartStatusType.Active;
+                    }
+                }
+
+                await _dbContext.SaveChangesAsync();
+                // Falls through: the reopened cart is picked up below and a new order is created
             }
 
             // 2. ONLY look for ACTIVE carts - (checkedOut carts are handled by the block above)
