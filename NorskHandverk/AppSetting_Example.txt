@@ -21,6 +21,12 @@ example appsettings.json
     "Issuer": "NorskHandverk",
     "Audience": "NorskHandverkClient",
     "ExpiryMinutes": 60
+  },
+  "AdminUser": {
+    "Email": "admin@norskhandverk.test",
+    "Password": <your-password>",
+    "Name": "Admin",
+    "Surname": "NorskHandverk"
   }
 
 }

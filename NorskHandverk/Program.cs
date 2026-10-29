@@ -1,14 +1,16 @@
-using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using NorskHandverk.Models.AuthModels;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using NorskHandverk.Data;
 using NorskHandverk.Models;
+using NorskHandverk.Models.AuthModels;
 using NorskHandverk.Models.ProductModels;
 using NorskHandverk.Services;
 //stripe 
 using Stripe;
+using System.Text;
+
 
 var builder = WebApplication.CreateBuilder(args);
 //get stripe key
@@ -100,6 +102,8 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+// Create the first admin user if none exists
+await AdminSeeder.SeedAsync(app.Services);
 app.UseCors("AllowAll");
 
 // Configure the HTTP request pipeline.
