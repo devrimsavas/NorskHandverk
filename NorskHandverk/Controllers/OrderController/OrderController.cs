@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NorskHandverk.DTOs.OrderDTOs;
 using NorskHandverk.Models;
+using NorskHandverk.Models.CartModels;
 using NorskHandverk.Models.CustomerModels;
 using NorskHandverk.Models.OrderModels;
 using NorskHandverk.Models.ProductModels;
@@ -74,7 +75,7 @@ namespace NorskHandverk.Controllers.OrderController
             var existingOrder = await _dbContext.Orders
                 .Include(o => o.Items)
                 .Include(o => o.OrderStatus)
-                .FirstOrDefaultAsync(o => o.CustomerId == customerId && o.OrderStatusId == 5);
+                .FirstOrDefaultAsync(o => o.CustomerId == customerId && o.OrderStatusId == (int)OrderStatusType.AwaitingPayment);
 
             if (existingOrder != null && !string.IsNullOrEmpty(existingOrder.PaymentIntentId))
             {
@@ -95,7 +96,7 @@ namespace NorskHandverk.Controllers.OrderController
             var cart = await _dbContext.Carts
                 .Include(c => c.CartStatus)
                 .Include(c => c.Items).ThenInclude(i => i.Product)
-                .FirstOrDefaultAsync(c => c.CustomerId == customerId && c.CartStatus.Name == "active");
+                .FirstOrDefaultAsync(c => c.CustomerId == customerId && c.CartStatusId == (int)CartStatusType.Active);
 
             if (cart == null || !cart.Items.Any())
             {
@@ -115,7 +116,7 @@ namespace NorskHandverk.Controllers.OrderController
                 CustomerId = customerId,
                 OrderNumber = "ORD-" + DateTime.Now.Ticks,
                 OrderDate = DateTime.UtcNow,
-                OrderStatusId = 5,
+                OrderStatusId = (int)OrderStatusType.AwaitingPayment,
                 PaymentIntentId = paymentIntent.Id,
                 Items = cart.Items.Select(ci => new OrderItem
                 {
@@ -128,8 +129,7 @@ namespace NorskHandverk.Controllers.OrderController
             };
 
             // 6. Update cart status to checkedOut
-            var checkedOutStatus = await _dbContext.CartStatuses.FirstOrDefaultAsync(s => s.Name == "checkedOut");
-            cart.CartStatusId = checkedOutStatus.Id;
+            cart.CartStatusId = (int)CartStatusType.CheckedOut;
 
             _dbContext.Orders.Add(order);
 
@@ -171,7 +171,7 @@ namespace NorskHandverk.Controllers.OrderController
             }
 
             // 2. Prevent re-canceling or canceling delivered orders
-            if (order.OrderStatusId == 1)
+            if (order.OrderStatusId == (int)OrderStatusType.Canceled)
             {
                 return BadRequest(new { Message = "Order is already canceled." });
             }
@@ -194,7 +194,7 @@ namespace NorskHandverk.Controllers.OrderController
             }
 
             // 4. Update status to Canceled
-            order.OrderStatusId = 1;
+            order.OrderStatusId = (int)OrderStatusType.Canceled;
 
             await _dbContext.SaveChangesAsync();
 

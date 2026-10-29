@@ -80,20 +80,23 @@ namespace NorskHandverk.Models
                 new MemberShipStatus { Id=2,Name="Gold"},
                 new MemberShipStatus { Id=3, Name="Platinum"}
                 );
+            //Order-Status 
             modelBuilder.Entity<OrderStatus>()
                 .HasData(
-                new OrderStatus { Id = 1, Name = "Canceled" },
-                new OrderStatus { Id = 2, Name = "Ordered" },
-                new OrderStatus { Id = 3, Name = "In Progress" },
-                new OrderStatus { Id = 4, Name = "Delivered" },
-                new OrderStatus { Id=5,Name="Awaiting Payment"}
+                new OrderStatus { Id = (int)OrderStatusType.Canceled, Name = "Canceled" },
+                new OrderStatus { Id = (int)OrderStatusType.Ordered, Name = "Ordered" },
+                new OrderStatus { Id = (int)OrderStatusType.InProgress, Name = "In Progress" },
+                new OrderStatus { Id = (int)OrderStatusType.Delivered, Name = "Delivered" },
+                new OrderStatus { Id = (int)OrderStatusType.AwaitingPayment, Name = "Awaiting Payment" }
                 );
+
             //Order-Customer 
             modelBuilder.Entity<Order>() 
                 .HasOne(o=>o.Customer)
                 .WithMany(c=>c.Orders)
                 .HasForeignKey(o=>o.CustomerId)
                 .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<Order>()
                 .HasMany(o=>o.Items)
                 .WithOne(i=>i.Order)
@@ -104,14 +107,17 @@ namespace NorskHandverk.Models
                 .WithMany()
                 .HasForeignKey(oi=>oi.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+
             //Cart-Status 
             modelBuilder.Entity<CartStatus>()
                 .HasData(
-                new CartStatus { Id=1, Name="active"},
-                new CartStatus { Id=2, Name="checkedOut"},
-                new CartStatus { Id=3, Name="abondoned"}
+                new CartStatus { Id = (int)CartStatusType.Active, Name = "active" },
+                new CartStatus { Id = (int)CartStatusType.CheckedOut, Name = "checkedOut" },
+                new CartStatus { Id = (int)CartStatusType.Abandoned, Name = "abandoned" },
+                new CartStatus { Id = (int)CartStatusType.Completed, Name = "completed" }
                 );
-                
+
 
             //Cart -Customer 
             modelBuilder.Entity<Cart>()

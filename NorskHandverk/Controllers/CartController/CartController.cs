@@ -128,14 +128,11 @@ namespace NorskHandverk.Controllers.CartController
             {
                 //check cart active status 
                 var activeStatus=await _dbContext.CartStatuses.FirstOrDefaultAsync(s=>s.Name=="active");
-                if (activeStatus== null)
-                {
-                    return BadRequest("Cart status 'active' not defined in the database");
-                }
+                
                 var newCart = new Cart
                 {
                     CustomerId = createCartDTO.CustomerId,
-                    CartStatusId = activeStatus.Id,
+                    CartStatusId = (int)CartStatusType.Active,
                     CartNumber = "CRT-" + DateTime.Now.Ticks,
                     Items=new List<CartItem>()
                 };
@@ -230,7 +227,7 @@ namespace NorskHandverk.Controllers.CartController
         {
             //find cart
             var cart = await _dbContext.Carts.Include(c => c.CartStatus).Include(c => c.Items).ThenInclude(i => i.Product)
-                .FirstOrDefaultAsync(c => c.CustomerId == customerId && c.CartStatus.Name == "active");
+                .FirstOrDefaultAsync(c => c.CustomerId == customerId && c.CartStatusId == (int)CartStatusType.Active);
 
             //check 
             if (cart==null)

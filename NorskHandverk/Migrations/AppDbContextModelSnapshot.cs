@@ -118,7 +118,12 @@ namespace NorskHandverk.Migrations
                         new
                         {
                             Id = 3,
-                            Name = "abondoned"
+                            Name = "abandoned"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "completed"
                         });
                 });
 
