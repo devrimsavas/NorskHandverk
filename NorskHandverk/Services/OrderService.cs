@@ -2,6 +2,7 @@
 using NorskHandverk.Models;
 using NorskHandverk.Models.CartModels;
 using NorskHandverk.Models.OrderModels;
+using NorskHandverk.Models.TransactionModels;
 using System.Threading.Tasks;
 
 namespace NorskHandverk.Services
@@ -29,10 +30,19 @@ namespace NorskHandverk.Services
                 return;
             }
 
-            // 2. order status 2 now 
+            // Payment succeeded: mark the order as ordered
             order.OrderStatusId = (int)OrderStatusType.Ordered;
 
-            //find cart and make status 3
+            // Mark the pending transaction of this order as successful
+            var transaction = await _dbContext.Transactions
+                .FirstOrDefaultAsync(t => t.OrderId == order.Id && t.TransactionStatusId == (int)TransactionStatusType.Pending);
+
+            if (transaction != null)
+            {
+                transaction.TransactionStatusId = (int)TransactionStatusType.Success;
+            }
+
+            // Find the checked-out cart and mark it as completed
             var cart = await _dbContext.Carts
                 .FirstOrDefaultAsync(c => c.CustomerId == order.CustomerId && c.CartStatusId == (int)CartStatusType.CheckedOut);
 

@@ -145,6 +145,7 @@ namespace NorskHandverk.Models
                 .WithMany()
                 .HasForeignKey (c=>c.CartStatusId)
                 .OnDelete(DeleteBehavior.Restrict);
+
             //Transaction Amount precision
             modelBuilder.Entity<Transaction>()
                 .Property(t => t.Amount)
@@ -156,6 +157,8 @@ namespace NorskHandverk.Models
                  .WithMany()
                  .HasForeignKey(t => t.TransactionMethodId)
                  .OnDelete(DeleteBehavior.Restrict);
+
+
             //Transaction-TransactionProvider
             modelBuilder.Entity<Transaction>()
                 .HasOne(t=>t.TransactionProvider)
@@ -172,47 +175,50 @@ namespace NorskHandverk.Models
             //TransactionMethod populate with well-known methods
             modelBuilder.Entity<TransactionMethod>()
                 .HasData(
-                new TransactionMethod { Id=1, Method="card"},
-                new TransactionMethod { Id=2, Method="vipps"},
-                new TransactionMethod { Id=3, Method="kontant"}
+                new TransactionMethod { Id = (int)TransactionMethodType.Card, Method = "card" },
+                new TransactionMethod { Id = (int)TransactionMethodType.Vipps, Method = "vipps" },
+                new TransactionMethod { Id = (int)TransactionMethodType.Cash, Method = "kontant" }
                 );
+
             //TransactionStatus populate 
             modelBuilder.Entity<TransactionStatus>()
-                .HasData(
-                new TransactionStatus { Id = 1, Status = "pending" },
-                new TransactionStatus { Id = 2, Status = "success" },
-                new TransactionStatus { Id = 3, Status = "failed" },
-                new TransactionStatus { Id = 4, Status = "canceled" }
-                );
+            .HasData(
+            new TransactionStatus { Id = (int)TransactionStatusType.Pending, Status = "pending" },
+            new TransactionStatus { Id = (int)TransactionStatusType.Success, Status = "success" },
+            new TransactionStatus { Id = (int)TransactionStatusType.Failed, Status = "failed" },
+            new TransactionStatus { Id = (int)TransactionStatusType.Canceled, Status = "canceled" }
+            );
+
+            //Transaction Provider 
             modelBuilder.Entity<TransactionProvider>()
-                .HasData(
-                new TransactionProvider { Id = 1, Name = "Stripe" },
-                new TransactionProvider { Id = 2, Name = "Google Pay" },
-                new TransactionProvider { Id = 3, Name = "Vipps" },
-                new TransactionProvider { Id = 4, Name = "Klarna" },
-                new TransactionProvider { Id = 5, Name = "Nets" },
-                new TransactionProvider { Id = 6, Name = "Manual" }
-                );
+            .HasData(
+            new TransactionProvider { Id = (int)TransactionProviderType.Stripe, Name = "Stripe" },
+            new TransactionProvider { Id = (int)TransactionProviderType.GooglePay, Name = "Google Pay" },
+            new TransactionProvider { Id = (int)TransactionProviderType.Vipps, Name = "Vipps" },
+            new TransactionProvider { Id = (int)TransactionProviderType.Klarna, Name = "Klarna" },
+            new TransactionProvider { Id = (int)TransactionProviderType.Nets, Name = "Nets" },
+            new TransactionProvider { Id = (int)TransactionProviderType.Manual, Name = "Manual" }
+            );
 
 
 
 
 
 
-            
-
-                
 
 
-                
-            
 
 
-              
-                
-                
-                
-                
+
+
+
+
+
+
+
+
+
+
 
         }
 

@@ -7,6 +7,7 @@ using NorskHandverk.Models.CartModels;
 using NorskHandverk.Models.CustomerModels;
 using NorskHandverk.Models.OrderModels;
 using NorskHandverk.Models.ProductModels;
+using NorskHandverk.Models.TransactionModels;
 using NorskHandverk.Services;
 using Stripe;
 
@@ -140,9 +141,9 @@ namespace NorskHandverk.Controllers.OrderController
                 Amount = totalAmount,
                 Currency = "NOK",
                 Order = order,
-                TransactionMethodId = 1,
-                TransactionProviderId = 1,
-                TransactionStatusId = 1,
+                TransactionMethodId = (int)TransactionMethodType.Card,
+                TransactionProviderId = (int)TransactionProviderType.Stripe,
+                TransactionStatusId = (int)TransactionStatusType.Pending,
                 CreateadAt = DateTime.UtcNow
             });
 
