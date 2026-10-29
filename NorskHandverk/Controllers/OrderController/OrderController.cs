@@ -157,11 +157,11 @@ namespace NorskHandverk.Controllers.OrderController
             return Ok(new { Order = readDTO, ClientSecret = paymentIntent.ClientSecret });
         }
 
+        
         //CANCEL ORDER 
         [HttpPost("cancel/{orderId}")]
         public async Task<ActionResult> CancelOrder(int orderId)
         {
-            // 1. Fetch the order including its items
             var order = await _dbContext.Orders
                 .Include(o => o.Items)
                 .FirstOrDefaultAsync(o => o.Id == orderId);
@@ -171,22 +171,43 @@ namespace NorskHandverk.Controllers.OrderController
                 return NotFound(new { Message = "Order not found." });
             }
 
-            // 2. Prevent re-canceling or canceling delivered orders
-            if (order.OrderStatusId == (int)OrderStatusType.Canceled)
+            var isAwaitingPayment = order.OrderStatusId == (int)OrderStatusType.AwaitingPayment;
+            var isPaid = order.OrderStatusId == (int)OrderStatusType.Ordered;
+
+            // Only unpaid orders, or paid orders that are not yet in progress, can be canceled
+            if (!isAwaitingPayment && !isPaid)
             {
-                return BadRequest(new { Message = "Order is already canceled." });
+                return BadRequest(new { Message = "Only orders that are awaiting payment or ordered can be canceled." });
             }
 
-            // 3. Loop through items to restore stock levels
+            // Call Stripe first: if it fails, nothing in the database is changed
+            if (!string.IsNullOrEmpty(order.PaymentIntentId))
+            {
+                try
+                {
+                    if (isAwaitingPayment)
+                    {
+                        await _paymentService.CancelPaymentIntent(order.PaymentIntentId);
+                    }
+                    else
+                    {
+                        await _paymentService.RefundPayment(order.PaymentIntentId);
+                    }
+                }
+                catch (StripeException e)
+                {
+                    return BadRequest(new { Message = $"Payment provider error: {e.Message}" });
+                }
+            }
+
+            // Restore stock levels
             foreach (var item in order.Items)
             {
                 var product = await _dbContext.Products.FindAsync(item.ProductId);
                 if (product != null)
                 {
-                    // Add quantity back to inventory
                     product.Quantity += item.Quantity;
 
-                    // Re-activate product if it was out of stock
                     if (product.Quantity > 0 && product.Status == Status.Out_Of_Stock)
                     {
                         product.Status = Status.Available;
@@ -194,12 +215,40 @@ namespace NorskHandverk.Controllers.OrderController
                 }
             }
 
-            // 4. Update status to Canceled
+            // Update the transaction: an unpaid one is canceled, a paid one is refunded
+            var transaction = await _dbContext.Transactions
+                .FirstOrDefaultAsync(t => t.OrderId == order.Id &&
+                    (t.TransactionStatusId == (int)TransactionStatusType.Pending ||
+                     t.TransactionStatusId == (int)TransactionStatusType.Success));
+
+            if (transaction != null)
+            {
+                transaction.TransactionStatusId = isAwaitingPayment
+                    ? (int)TransactionStatusType.Canceled
+                    : (int)TransactionStatusType.Refunded;
+            }
+
+            // An unpaid order leaves its checked-out cart behind, so mark it as abandoned
+            if (isAwaitingPayment)
+            {
+                var cart = await _dbContext.Carts
+                    .FirstOrDefaultAsync(c => c.CustomerId == order.CustomerId && c.CartStatusId == (int)CartStatusType.CheckedOut);
+
+                if (cart != null)
+                {
+                    cart.CartStatusId = (int)CartStatusType.Abandoned;
+                }
+            }
+
             order.OrderStatusId = (int)OrderStatusType.Canceled;
 
             await _dbContext.SaveChangesAsync();
 
-            return Ok(new { Message = $"Order {order.OrderNumber} canceled and stocks updated." });
+            var message = isPaid
+                ? $"Order {order.OrderNumber} canceled and payment refunded."
+                : $"Order {order.OrderNumber} canceled.";
+
+            return Ok(new { Message = message });
         }
 
         //WEBHOOK 

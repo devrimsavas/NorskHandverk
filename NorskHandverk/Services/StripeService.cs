@@ -24,5 +24,23 @@ namespace NorskHandverk.Services
             return await service.CreateAsync(options);
         }
 
+        public async Task CancelPaymentIntent(string paymentIntentId)
+        {
+            var service = new PaymentIntentService();
+            await service.CancelAsync(paymentIntentId);
+        }
+
+        public async Task RefundPayment(string paymentIntentId)
+        {
+            var options = new RefundCreateOptions
+            {
+                PaymentIntent = paymentIntentId
+            };
+            var service = new RefundService();
+            await service.CreateAsync(options);
+        }
+
+
+
     }
 }

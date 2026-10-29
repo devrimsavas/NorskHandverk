@@ -189,7 +189,8 @@ namespace NorskHandverk.Models
             new TransactionStatus { Id = (int)TransactionStatusType.Pending, Status = "pending" },
             new TransactionStatus { Id = (int)TransactionStatusType.Success, Status = "success" },
             new TransactionStatus { Id = (int)TransactionStatusType.Failed, Status = "failed" },
-            new TransactionStatus { Id = (int)TransactionStatusType.Canceled, Status = "canceled" }
+            new TransactionStatus { Id = (int)TransactionStatusType.Canceled, Status = "canceled" },
+            new TransactionStatus { Id=(int)TransactionStatusType.Refunded,Status="refunded"}
             );
 
             //Transaction Provider 

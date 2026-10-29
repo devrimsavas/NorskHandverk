@@ -2,6 +2,7 @@
 {
     public class ReadOrderDTO
     {
+        public int Id { get; set; }
         public string OrderNumber { get; set; }
         public string StatusName { get; set; }
         public int CustomerId { get; set; }

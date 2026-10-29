@@ -601,6 +601,11 @@ namespace NorskHandverk.Migrations
                         {
                             Id = 4,
                             Status = "canceled"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Status = "refunded"
                         });
                 });
 
