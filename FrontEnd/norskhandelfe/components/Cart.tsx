@@ -15,6 +15,7 @@ interface Item {
 }
 
 interface Cart {
+  id:number;
   cartNumber: string;
   customerId: number;
   statusName: string;
@@ -74,6 +75,7 @@ const Cart = () => {
       <table className="min-w-full text-left border-collapse text-sm">
         <thead className="bg-gray-100 text-gray-800 uppercase font-semibold">
           <tr>
+            <th className="px-3 py-2">ID</th>
             <th className="px-3 py-2">Cart Number</th>
             <th className="px-3 py-2">Customer ID</th>
             <th className="px-3 py-2">Status</th>
@@ -88,6 +90,7 @@ const Cart = () => {
             <React.Fragment key={cart.cartNumber}>
               {/* Main Cart Row */}
               <tr className="bg-gray-50 font-medium">
+                <td className="px-3 py-2">#{cart.id}</td>
                 <td className="px-3 py-2">{cart.cartNumber}</td>
                 <td className="px-3 py-2">{cart.customerId}</td>
                 <td className="px-3 py-2">
@@ -120,7 +123,7 @@ const Cart = () => {
                   key={`${cart.cartNumber}-${item.productId}`}
                   className="hover:bg-gray-50 transition border-b border-gray-50"
                 >
-                  <td colSpan={3}></td>
+                  <td colSpan={4}></td>
                   <td className="px-3 py-2 italic text-gray-600">
                     {item.productName}
                   </td>

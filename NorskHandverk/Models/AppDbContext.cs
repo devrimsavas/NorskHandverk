@@ -110,6 +110,13 @@ namespace NorskHandverk.Models
                 .WithMany()
                 .HasForeignKey(oi=>oi.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
+            //Order-Cart (optional: older orders have no cart reference)
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.Cart)
+                .WithMany()
+                .HasForeignKey(o => o.CartId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
 
 
             //Cart-Status 

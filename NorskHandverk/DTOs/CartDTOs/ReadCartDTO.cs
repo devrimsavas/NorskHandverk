@@ -4,6 +4,7 @@ namespace NorskHandverk.DTOs.CartDTOs
 {
     public class ReadCartDTO
     {
+        public int Id { get; set; }
         public string CartNumber { get; set; }
         public int CustomerId { get; set; }
         public string StatusName { get; set; }

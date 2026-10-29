@@ -42,19 +42,18 @@ namespace NorskHandverk.Services
                 transaction.TransactionStatusId = (int)TransactionStatusType.Success;
             }
 
-            // Find the checked-out cart and mark it as completed
-            var cart = await _dbContext.Carts
-                .FirstOrDefaultAsync(c => c.CustomerId == order.CustomerId && c.CartStatusId == (int)CartStatusType.CheckedOut);
+            // Find the cart this order was created from and mark it as completed
+            var cart = order.CartId.HasValue
+                ? await _dbContext.Carts.FindAsync(order.CartId.Value)
+                : null;
 
             if (cart != null)
             {
-                //  'abandoned' (3) status (need to change later)
-                // Payment succeeded, so the checked-out cart is now completed
                 cart.CartStatusId = (int)CartStatusType.Completed;
             }
             else
             {
-                Console.WriteLine($"!!! Warning: Custoer  {order.CustomerId} has not any cart with  'checkedOut' status.");
+                Console.WriteLine($"Warning: order {order.OrderNumber} has no linked cart.");
             }
 
             await _dbContext.SaveChangesAsync();

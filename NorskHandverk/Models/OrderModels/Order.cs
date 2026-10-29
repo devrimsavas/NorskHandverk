@@ -3,7 +3,9 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using NorskHandverk.Models.CustomerModels;
 using NorskHandverk.Models.ProductModels;
+using NorskHandverk.Models.CartModels;
 namespace NorskHandverk.Models.OrderModels;
+
 
 
 public class Order
@@ -26,6 +28,9 @@ public class Order
     public DateTime OrderDate { get; set; }
 
     public string? PaymentIntentId { get; set; }    
+
+    public int? CartId { get; set; }
+    public Cart? Cart { get; set; }
 
 
 

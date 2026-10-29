@@ -119,6 +119,7 @@ namespace NorskHandverk.Controllers.OrderController
                 OrderDate = DateTime.UtcNow,
                 OrderStatusId = (int)OrderStatusType.AwaitingPayment,
                 PaymentIntentId = paymentIntent.Id,
+                CartId=cart.Id,
                 Items = cart.Items.Select(ci => new OrderItem
                 {
                     ProductId = ci.ProductId,
@@ -231,8 +232,9 @@ namespace NorskHandverk.Controllers.OrderController
             // An unpaid order leaves its checked-out cart behind, so mark it as abandoned
             if (isAwaitingPayment)
             {
-                var cart = await _dbContext.Carts
-                    .FirstOrDefaultAsync(c => c.CustomerId == order.CustomerId && c.CartStatusId == (int)CartStatusType.CheckedOut);
+                var cart = order.CartId.HasValue
+                    ? await _dbContext.Carts.FindAsync(order.CartId.Value)
+                    : null;
 
                 if (cart != null)
                 {

@@ -220,6 +220,9 @@ namespace NorskHandverk.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("CartId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("CustomerId")
                         .HasColumnType("integer");
 
@@ -237,6 +240,8 @@ namespace NorskHandverk.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CartId");
 
                     b.HasIndex("CustomerId");
 
@@ -660,6 +665,11 @@ namespace NorskHandverk.Migrations
 
             modelBuilder.Entity("NorskHandverk.Models.OrderModels.Order", b =>
                 {
+                    b.HasOne("NorskHandverk.Models.CartModels.Cart", "Cart")
+                        .WithMany()
+                        .HasForeignKey("CartId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("NorskHandverk.Models.CustomerModels.Customer", "Customer")
                         .WithMany("Orders")
                         .HasForeignKey("CustomerId")
@@ -671,6 +681,8 @@ namespace NorskHandverk.Migrations
                         .HasForeignKey("OrderStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Cart");
 
                     b.Navigation("Customer");
 
