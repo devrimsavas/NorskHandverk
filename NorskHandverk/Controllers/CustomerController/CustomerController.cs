@@ -27,6 +27,7 @@ namespace NorskHandverk.Controllers.CustomerController
         
         }
         //GET ALL CUSTOMERS 
+        [Authorize(Roles ="Admin")]
         [HttpGet]
         public async Task<ActionResult<ICollection<ReadCustomerDTO>>> GetCustomers()
         {
@@ -35,6 +36,7 @@ namespace NorskHandverk.Controllers.CustomerController
             return Ok(results);
         }
         //GET CUSTOMER BY ID 
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id}")] 
         public async Task<ActionResult<ReadCustomerDTO>> GetCustomerById(int id )
         {
@@ -95,6 +97,7 @@ namespace NorskHandverk.Controllers.CustomerController
 
         }
         //UPDATE CUSTOMER 
+        [Authorize(Roles = "Admin")]
         [HttpPut("{customerId}")]
         public async Task<ActionResult<ReadCustomerDTO>> UpdateCustomer(UpdateCustomerDTO updateCustomerDTO,int customerId)
         {
@@ -135,6 +138,7 @@ namespace NorskHandverk.Controllers.CustomerController
 
         }
         //SOFT DELETE 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{customerId}")]
         public async Task<ActionResult<ReadCustomerDTO>> DeleteCustomer(int customerId)
         {
