@@ -5,11 +5,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using NorskHandverk.DTOs.CustomerDTOs;
+using NorskHandverk.Extensions;
 using NorskHandverk.Mappings;
 using NorskHandverk.Models;
 using NorskHandverk.Models.CustomerModels;
 using NorskHandverk.Models.ProductModels;
 using System.Security.Claims;
+
 
 
 namespace NorskHandverk.Controllers.CustomerController
@@ -54,8 +56,8 @@ namespace NorskHandverk.Controllers.CustomerController
         [HttpGet("me")]
         public async Task<ActionResult<ReadCustomerDTO>> GetCurrentCustomer()
         {
-            var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(idClaim, out var customerId))
+            var customerId = User.GetCustomerId();
+            if (customerId == null)
             {
                 return Unauthorized();
             }
