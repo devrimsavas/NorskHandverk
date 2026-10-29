@@ -1,13 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using NorskHandverk.DTOs.CustomerDTOs;
+using NorskHandverk.Mappings;
 using NorskHandverk.Models;
 using NorskHandverk.Models.CustomerModels;
 using NorskHandverk.Models.ProductModels;
-using NorskHandverk.DTOs.CustomerDTOs;
-using NorskHandverk.Mappings;
-using AutoMapper;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
+using System.Security.Claims;
 
 
 namespace NorskHandverk.Controllers.CustomerController
@@ -44,6 +46,30 @@ namespace NorskHandverk.Controllers.CustomerController
             var result=_mapper.Map<ReadCustomerDTO>(existedCustomer);
             return Ok(result);
         }
+
+        //GET CURRENT CUSTOMER (from the JWT token)
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<ActionResult<ReadCustomerDTO>> GetCurrentCustomer()
+        {
+            var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(idClaim, out var customerId))
+            {
+                return Unauthorized();
+            }
+
+            var customer = await _dbContext.Customers
+                .Include(c => c.MemberShipStatus)
+                .FirstOrDefaultAsync(c => c.Id == customerId && !c.IsDeleted);
+
+            if (customer == null)
+            {
+                return NotFound(new { Message = "Customer does not exist" });
+            }
+
+            return Ok(_mapper.Map<ReadCustomerDTO>(customer));
+        }
+
         //CREATE CUSTOMER 
         [HttpPost]
         public async Task<ActionResult<ReadCustomerDTO>> CreateCustomer(CreateCustomerDTO createCustomerDTO)

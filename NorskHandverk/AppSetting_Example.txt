@@ -15,5 +15,12 @@ example appsettings.json
     "SecretKey": <your-stripe-secret-key>,
     "PublishableKey": "<your-stripe-public-key>,
     "WebhookSecret": <webhook-secret>
+  },
+  "Jwt": {
+    "SecretKey": <your-secret-key>,
+    "Issuer": "NorskHandverk",
+    "Audience": "NorskHandverkClient",
+    "ExpiryMinutes": 60
   }
+
 }
