@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using NorskHandverk.DTOs.BrandDTOs;
 using NorskHandverk.Models;
 using NorskHandverk.Models.ProductModels;
-using NorskHandverk.DTOs.BrandDTOs;
-using AutoMapper;
 namespace NorskHandverk.Controllers.BrandController
 {
 
@@ -43,6 +44,7 @@ namespace NorskHandverk.Controllers.BrandController
             return Ok(result);
         }
         //CREATE A NEW  BRAND 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<ActionResult<BrandReadDTO>> CreateBrand(BrandCreateDTO brandCreateDTO)
         {
@@ -61,6 +63,7 @@ namespace NorskHandverk.Controllers.BrandController
         }
 
         //Update a Brand 
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")] 
         public async Task<ActionResult<BrandReadDTO>> UpdateBrand(BrandUpdateDTO brandUpdateDTO, int id)
         {
@@ -75,6 +78,8 @@ namespace NorskHandverk.Controllers.BrandController
             
             return Ok(readDTO);    
         }
+        //delete by id 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<ActionResult<BrandReadDTO>> DeleteBrand(int id)
         {

@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper; 
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NorskHandverk.DTOs.CategoryDTOs;
 using NorskHandverk.Models;
 using NorskHandverk.Models.ProductModels;
-using NorskHandverk.DTOs.CategoryDTOs;
-
-using AutoMapper; 
+using Microsoft.AspNetCore.Authorization;
 
 namespace NorskHandverk.Controllers.CategoryController
 {
@@ -34,6 +34,8 @@ namespace NorskHandverk.Controllers.CategoryController
 
             return Ok(result);
         }
+
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         //CREATE NEW CATEGORY 
         public async Task<ActionResult<CategoryReadDTO>> CreateCategory(CreateCategoryDTO createCategoryDTO)
@@ -50,6 +52,7 @@ namespace NorskHandverk.Controllers.CategoryController
 
             return CreatedAtAction(nameof(GetCategories), new { id = newCategory.Id }, readDto);
         }
+        [Authorize(Roles = "Admin")]
         [HttpPut("{categoryId}")]
         //UPDATE A CATEGORY 
         public async Task<ActionResult<CategoryReadDTO>> UpdateCategory(int categoryId, UpdateCategoryDTO updateCategoryDTO)
@@ -69,6 +72,7 @@ namespace NorskHandverk.Controllers.CategoryController
             return Ok(readDto);
         }
         //DELETE A CATEGORY 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<ActionResult<CategoryReadDTO>> DeleteCategory(int id)
         {

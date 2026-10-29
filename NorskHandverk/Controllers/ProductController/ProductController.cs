@@ -4,7 +4,9 @@ using NorskHandverk.Models;
 using NorskHandverk.Models.ProductModels;
 using NorskHandverk.DTOs.ProductDTOs;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 namespace NorskHandverk.Controllers.ProductController
+
 {
     [ApiController]
     [Route("api/[Controller]")]
@@ -37,6 +39,7 @@ namespace NorskHandverk.Controllers.ProductController
             var ReadDTO=_mapper.Map<ProductReadDTO>(existedProduct);
             return Ok(ReadDTO);
         }
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         //CREATE NEW PRODUCT 
         public async Task<ActionResult<ProductReadDTO>> CreateProduct(ProductCreateDTO productCreateDTO)
@@ -68,6 +71,7 @@ namespace NorskHandverk.Controllers.ProductController
             return CreatedAtAction(nameof(GetAProduct), new {id=newProduct.Id}, readDto);
         }
         //UPDATE PRODUCT
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<ActionResult<ProductReadDTO>> UpdateProduct(int id, ProductUpdateDTO productUpdateDTO)
         {
@@ -118,7 +122,7 @@ namespace NorskHandverk.Controllers.ProductController
             var readDTO = _mapper.Map<ProductReadDTO>(resultProduct);
             return Ok(readDTO);
         }
-
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")] 
         public async Task<ActionResult<ProductReadDTO>> DeleteProduct(int id)
         {
