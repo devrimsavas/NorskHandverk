@@ -72,6 +72,20 @@ namespace NorskHandverk.Controllers.CustomerController
             return Ok(_mapper.Map<ReadCustomerDTO>(customer));
         }
 
+        //UPDATE CURRENT CUSTOMER (from the JWT token)
+        [Authorize]
+        [HttpPut("me")]
+        public async Task<ActionResult<ReadCustomerDTO>> UpdateCurrentCustomer(UpdateCustomerDTO updateCustomerDTO)
+        {
+            var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(idClaim, out var customerId))
+            {
+                return Unauthorized();
+            }
+
+            return await ApplyCustomerUpdate(customerId, updateCustomerDTO);
+        }
+
         //CREATE CUSTOMER 
         [HttpPost]
         public async Task<ActionResult<ReadCustomerDTO>> CreateCustomer(CreateCustomerDTO createCustomerDTO)
@@ -96,46 +110,52 @@ namespace NorskHandverk.Controllers.CustomerController
             return CreatedAtAction(nameof(GetCustomerById), new { id = readDTO.Id }, readDTO);
 
         }
-        //UPDATE CUSTOMER 
+        //UPDATE CUSTOMER (admin)
         [Authorize(Roles = "Admin")]
         [HttpPut("{customerId}")]
-        public async Task<ActionResult<ReadCustomerDTO>> UpdateCustomer(UpdateCustomerDTO updateCustomerDTO,int customerId)
+        public async Task<ActionResult<ReadCustomerDTO>> UpdateCustomer(UpdateCustomerDTO updateCustomerDTO, int customerId)
         {
-            //find existed user 
-            var existedUser = await _dbContext.Customers.Include(c=>c.MemberShipStatus).FirstOrDefaultAsync(c => c.Id == customerId);
-            if (existedUser==null)
+            return await ApplyCustomerUpdate(customerId, updateCustomerDTO);
+        }
+
+        // Shared update logic for the admin endpoint and the /me endpoint
+        private async Task<ActionResult<ReadCustomerDTO>> ApplyCustomerUpdate(int customerId, UpdateCustomerDTO updateCustomerDTO)
+        {
+            var existedUser = await _dbContext.Customers
+                .Include(c => c.MemberShipStatus)
+                .FirstOrDefaultAsync(c => c.Id == customerId && !c.IsDeleted);
+
+            if (existedUser == null)
             {
-                return NotFound(new {Message="Customer is not found"});
+                return NotFound(new { Message = "Customer is not found" });
             }
-            //check email control 
+
             if (!string.IsNullOrEmpty(updateCustomerDTO.Email))
             {
-                var emailInUse=await _dbContext.Customers.AnyAsync(c=>c.Email==updateCustomerDTO.Email && c.Id!=customerId);
-                if ( emailInUse) 
+                var emailInUse = await _dbContext.Customers
+                    .AnyAsync(c => c.Email == updateCustomerDTO.Email && c.Id != customerId);
+
+                if (emailInUse)
                 {
                     return Conflict(new { Message = "Email is already in use by another customer" });
-                    
                 }
-
             }
-            //password
+
             if (!string.IsNullOrEmpty(updateCustomerDTO.Password))
             {
                 var passwordHasher = new PasswordHasher<Customer>();
-                existedUser.PasswordHash=passwordHasher.HashPassword(existedUser,updateCustomerDTO.Password);   
+                existedUser.PasswordHash = passwordHasher.HashPassword(existedUser, updateCustomerDTO.Password);
             }
+
             existedUser.Name = updateCustomerDTO.Name ?? existedUser.Name;
-            existedUser.Surname=updateCustomerDTO.Surname ?? existedUser.Surname;
-            existedUser.Email=updateCustomerDTO?.Email ?? existedUser.Email;
-            existedUser.Address=updateCustomerDTO?.Address ?? existedUser.Address;
-            existedUser.TelephoneNumber=updateCustomerDTO?.TelephoneNumber ?? existedUser.TelephoneNumber;
+            existedUser.Surname = updateCustomerDTO.Surname ?? existedUser.Surname;
+            existedUser.Email = updateCustomerDTO.Email ?? existedUser.Email;
+            existedUser.Address = updateCustomerDTO.Address ?? existedUser.Address;
+            existedUser.TelephoneNumber = updateCustomerDTO.TelephoneNumber ?? existedUser.TelephoneNumber;
 
-            
             await _dbContext.SaveChangesAsync();
-            var readDTO=_mapper.Map<ReadCustomerDTO>(existedUser);
-            return Ok(readDTO);
 
-
+            return Ok(_mapper.Map<ReadCustomerDTO>(existedUser));
         }
         //SOFT DELETE 
         [Authorize(Roles = "Admin")]
