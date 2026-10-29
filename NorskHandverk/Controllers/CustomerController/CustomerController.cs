@@ -59,7 +59,7 @@ namespace NorskHandverk.Controllers.CustomerController
             var passwordHasher = new PasswordHasher<Customer>();
             //add hashed
             newCustomer.PasswordHash = passwordHasher.HashPassword(newCustomer, createCustomerDTO.Password);
-            newCustomer.MemberShipStatusId = 1;
+            newCustomer.MemberShipStatusId = (int)MemberShipStatusType.Silver;
             //add
             _dbContext.Customers.Add(newCustomer);
             await _dbContext.SaveChangesAsync();    

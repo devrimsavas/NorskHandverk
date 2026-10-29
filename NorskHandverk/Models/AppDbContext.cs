@@ -68,18 +68,21 @@ namespace NorskHandverk.Models
             modelBuilder.Entity<Customer>()
                 .HasIndex(c => c.Email)
                 .IsUnique();
+
             modelBuilder.Entity<Customer>()
                 .HasOne(c => c.MemberShipStatus)
                 .WithMany()
                 .HasForeignKey(c => c.MemberShipStatusId)
                 .OnDelete(DeleteBehavior.Restrict);
-            modelBuilder.Entity<MemberShipStatus>()
-                .HasData(
-                new MemberShipStatus { Id=1,Name="Silver"},
 
-                new MemberShipStatus { Id=2,Name="Gold"},
-                new MemberShipStatus { Id=3, Name="Platinum"}
-                );
+            //membership status 
+            modelBuilder.Entity<MemberShipStatus>()
+            .HasData(
+            new MemberShipStatus { Id = (int)MemberShipStatusType.Silver, Name = "Silver" },
+            new MemberShipStatus { Id = (int)MemberShipStatusType.Gold, Name = "Gold" },
+            new MemberShipStatus { Id = (int)MemberShipStatusType.Platinum, Name = "Platinum" }
+            );
+
             //Order-Status 
             modelBuilder.Entity<OrderStatus>()
                 .HasData(
