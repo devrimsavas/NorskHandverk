@@ -31,21 +31,21 @@ export default function ProductsPage() {
   }, []);
 
   return (
-    <section className="min-h-screen bg-stone-50 py-12">
+    <section className="min-h-screen bg-page py-12">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <header className="mb-10">
-          <h1 className="text-3xl font-semibold text-stone-900">Shop</h1>
-          <p className="text-stone-500 mt-1">
+          <h1 className="text-3xl font-semibold text-ink">Shop</h1>
+          <p className="text-muted mt-1">
             Handmade in Norway, from wood, wool and clay
           </p>
         </header>
 
-        {isLoading && <p className="text-stone-500">Loading products...</p>}
+        {isLoading && <p className="text-muted">Loading products...</p>}
 
         {error && <p className="text-red-600">{error}</p>}
 
         {!isLoading && !error && products.length === 0 && (
-          <p className="text-stone-500">No products yet.</p>
+          <p className="text-muted">No products yet.</p>
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

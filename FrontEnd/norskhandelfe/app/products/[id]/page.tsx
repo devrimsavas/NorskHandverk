@@ -88,15 +88,15 @@ export default function ProductDetailPage() {
 
   if (isLoading) {
     return (
-      <p className="max-w-5xl mx-auto px-6 py-12 text-stone-500">Loading...</p>
+      <p className="max-w-5xl mx-auto px-6 py-12 text-muted">Loading...</p>
     );
   }
 
   if (notFound || !product) {
     return (
       <div className="max-w-5xl mx-auto px-6 py-12">
-        <p className="text-stone-700 mb-4">This product could not be found.</p>
-        <Link href="/products" className="text-emerald-800 hover:underline">
+        <p className="text-muted mb-4">This product could not be found.</p>
+        <Link href="/products" className="text-accent hover:underline">
           Back to the shop
         </Link>
       </div>
@@ -107,17 +107,17 @@ export default function ProductDetailPage() {
   const isSoldOut = product.status === "Out_Of_Stock" || product.quantity === 0;
 
   return (
-    <section className="min-h-screen bg-stone-50 py-12">
+    <section className="min-h-screen bg-page py-12">
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
         <Link
           href="/products"
-          className="text-sm text-stone-500 hover:text-stone-800"
+          className="text-sm text-muted hover:text-ink"
         >
           ← Back to the shop
         </Link>
 
         <div className="mt-6 grid md:grid-cols-2 gap-10">
-          <div className="relative aspect-square rounded-2xl overflow-hidden bg-stone-100">
+          <div className="relative aspect-square rounded-2xl overflow-hidden bg-surface-muted">
             {imageUrl && (
               <Image
                 src={imageUrl}
@@ -132,29 +132,29 @@ export default function ProductDetailPage() {
 
           <div className="space-y-5">
             <div>
-              <p className="text-xs uppercase tracking-wide text-stone-500">
+              <p className="text-xs uppercase tracking-wide text-muted">
                 {product.categoryName} · {product.brandName}
               </p>
-              <h1 className="text-3xl font-semibold text-stone-900 mt-1 first-letter:uppercase">
+              <h1 className="text-3xl font-semibold text-ink mt-1 first-letter:uppercase">
                 {product.title}
               </h1>
             </div>
 
-            <p className="text-2xl text-stone-800">
+            <p className="text-2xl text-ink">
               {formatPrice(product.priceIncVat)}
             </p>
-            <p className="text-stone-600 leading-relaxed">
+            <p className="text-muted leading-relaxed">
               {product.description}
             </p>
 
-            <p className="text-sm text-stone-500">
+            <p className="text-sm text-muted">
               {isSoldOut ? "Sold out" : `${product.quantity} in stock`}
             </p>
 
             {isReady && !user && !isSoldOut && (
               <Link
                 href="/login"
-                className="inline-block rounded-lg bg-emerald-800 px-6 py-3 text-white font-medium hover:bg-emerald-900"
+                className="inline-block rounded-lg bg-accent px-6 py-3 text-accent-contrast font-medium hover:bg-accent-strong"
               >
                 Log in to add to cart
               </Link>
@@ -175,12 +175,12 @@ export default function ProductDetailPage() {
                       ),
                     )
                   }
-                  className="w-20 rounded-lg border border-stone-300 px-3 py-3 text-stone-900"
+                  className="w-20 rounded-lg border border-line px-3 py-3 text-ink"
                 />
                 <button
                   onClick={handleAddToCart}
                   disabled={isAdding}
-                  className="rounded-lg bg-emerald-800 px-6 py-3 text-white font-medium hover:bg-emerald-900 transition disabled:opacity-50"
+                  className="rounded-lg bg-accent px-6 py-3 text-accent-contrast font-medium hover:bg-accent-strong transition disabled:opacity-50"
                 >
                   {isAdding ? "Adding..." : "Add to cart"}
                 </button>
@@ -189,7 +189,7 @@ export default function ProductDetailPage() {
 
             {message && (
               <p
-                className={`text-sm ${message.isError ? "text-red-600" : "text-emerald-700"}`}
+                className={`text-sm ${message.isError ? "text-red-600" : "text-accent"}`}
               >
                 {message.text}
               </p>

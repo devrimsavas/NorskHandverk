@@ -28,19 +28,19 @@ export default function AccountLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <section className="min-h-screen bg-stone-50 py-12">
+    <section className="min-h-screen bg-page py-12">
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
-        <h1 className="text-3xl font-semibold text-stone-900">My account</h1>
+        <h1 className="text-3xl font-semibold text-ink">My account</h1>
 
-        <nav className="mt-6 mb-8 flex gap-2 border-b border-stone-200">
+        <nav className="mt-6 mb-8 flex gap-2 border-b border-line">
           {tabs.map((tab) => (
             <Link
               key={tab.href}
               href={tab.href}
               className={`px-4 py-2 -mb-px border-b-2 text-sm font-medium transition ${
                 pathname === tab.href
-                  ? "border-emerald-800 text-emerald-900"
-                  : "border-transparent text-stone-500 hover:text-stone-800"
+                  ? "border-accent text-accent"
+                  : "border-transparent text-muted hover:text-ink"
               }`}
             >
               {tab.label}

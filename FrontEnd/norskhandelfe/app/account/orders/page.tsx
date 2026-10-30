@@ -9,11 +9,14 @@ import { Order } from "@/lib/types";
 import { formatPrice } from "@/lib/format";
 
 const statusStyles: Record<string, string> = {
-  "Awaiting Payment": "bg-amber-100 text-amber-800",
-  Ordered: "bg-emerald-100 text-emerald-800",
-  "In Progress": "bg-sky-100 text-sky-800",
-  Delivered: "bg-stone-200 text-stone-800",
-  Canceled: "bg-red-100 text-red-700",
+  "Awaiting Payment":
+    "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200",
+  Ordered:
+    "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200",
+  "In Progress": "bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200",
+  Delivered:
+    "bg-stone-200 text-stone-800 dark:bg-stone-700/60 dark:text-stone-200",
+  Canceled: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200",
 };
 
 export default function OrdersPage() {
@@ -89,16 +92,16 @@ export default function OrdersPage() {
   };
 
   if (isLoading) {
-    return <p className="text-stone-500">Loading your orders...</p>;
+    return <p className="text-muted">Loading your orders...</p>;
   }
 
   if (orders.length === 0) {
     return (
-      <div className="bg-white rounded-2xl border border-stone-200 p-8 text-center">
-        <p className="text-stone-600 mb-4">You have no orders yet.</p>
+      <div className="bg-surface rounded-2xl border border-line p-8 text-center">
+        <p className="text-muted mb-4">You have no orders yet.</p>
         <Link
           href="/products"
-          className="text-emerald-800 font-medium hover:underline"
+          className="text-accent font-medium hover:underline"
         >
           Browse the shop
         </Link>
@@ -110,7 +113,7 @@ export default function OrdersPage() {
     <div className="space-y-4">
       {message && (
         <p
-          className={`text-sm ${message.isError ? "text-red-600" : "text-emerald-700"}`}
+          className={`text-sm ${message.isError ? "text-red-600" : "text-accent"}`}
         >
           {message.text}
         </p>
@@ -125,28 +128,26 @@ export default function OrdersPage() {
         return (
           <article
             key={order.id}
-            className="bg-white rounded-2xl border border-stone-200 p-6"
+            className="bg-surface rounded-2xl border border-line p-6"
           >
             <header className="flex flex-wrap items-center justify-between gap-3 mb-4">
               <div>
-                <p className="font-medium text-stone-900">
-                  {order.orderNumber}
-                </p>
-                <p className="text-sm text-stone-500">
+                <p className="font-medium text-ink">{order.orderNumber}</p>
+                <p className="text-sm text-muted">
                   {new Date(order.orderDate).toLocaleDateString("nb-NO")}
                 </p>
               </div>
               <span
                 className={`rounded-full px-3 py-1 text-xs font-medium ${
                   statusStyles[order.statusName] ??
-                  "bg-stone-100 text-stone-700"
+                  "bg-surface-muted text-muted"
                 }`}
               >
                 {order.statusName}
               </span>
             </header>
 
-            <ul className="text-sm text-stone-700 space-y-1">
+            <ul className="text-sm text-muted space-y-1">
               {order.items.map((item) => (
                 <li key={item.productId} className="flex justify-between">
                   <span className="first-letter:uppercase">
@@ -156,8 +157,8 @@ export default function OrdersPage() {
               ))}
             </ul>
 
-            <footer className="mt-4 pt-4 border-t border-stone-200 flex flex-wrap items-center justify-between gap-3">
-              <p className="text-stone-900">
+            <footer className="mt-4 pt-4 border-t border-line flex flex-wrap items-center justify-between gap-3">
+              <p className="text-ink">
                 Total{" "}
                 <span className="font-semibold">
                   {formatPrice(order.totalPriceIncVat)}
@@ -169,7 +170,7 @@ export default function OrdersPage() {
                   <button
                     onClick={() => completePayment(order)}
                     disabled={isBusy}
-                    className="rounded-lg bg-emerald-800 px-4 py-2 text-sm text-white font-medium hover:bg-emerald-900 disabled:opacity-50"
+                    className="rounded-lg bg-accent px-4 py-2 text-sm text-accent-contrast font-medium hover:bg-accent-strong disabled:opacity-50"
                   >
                     Complete payment
                   </button>
@@ -178,7 +179,7 @@ export default function OrdersPage() {
                   <button
                     onClick={() => cancelOrder(order)}
                     disabled={isBusy}
-                    className="rounded-lg border border-stone-300 px-4 py-2 text-sm text-stone-700 hover:border-red-300 hover:text-red-600 disabled:opacity-50"
+                    className="rounded-lg border border-line px-4 py-2 text-sm text-muted hover:border-red-300 hover:text-red-600 disabled:opacity-50"
                   >
                     {isBusy ? "Working..." : "Cancel order"}
                   </button>

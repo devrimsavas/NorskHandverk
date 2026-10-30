@@ -99,17 +99,17 @@ export default function ProfilePage() {
   };
 
   if (!form || !customer) {
-    return message ? <p className="text-red-600">{message.text}</p> : <p className="text-stone-500">Loading...</p>;
+    return message ? <p className="text-red-600">{message.text}</p> : <p className="text-muted">Loading...</p>;
   }
 
   const inputClass =
-    "w-full rounded-lg border border-stone-300 px-3 py-2 text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-700";
-  const labelClass = "block text-sm font-medium text-stone-700 mb-1";
+    "w-full rounded-lg border border-line px-3 py-2 text-ink focus:outline-none focus:ring-2 focus:ring-accent";
+  const labelClass = "block text-sm font-medium text-muted mb-1";
 
   return (
-    <div className="max-w-xl bg-white rounded-2xl border border-stone-200 p-8">
-      <p className="text-sm text-stone-500 mb-6">
-        Membership: <span className="font-medium text-stone-800">{customer.memberShipStatus}</span>
+    <div className="max-w-xl bg-surface rounded-2xl border border-line p-8">
+      <p className="text-sm text-muted mb-6">
+        Membership: <span className="font-medium text-ink">{customer.memberShipStatus}</span>
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -148,17 +148,17 @@ export default function ProfilePage() {
           <label htmlFor="password" className={labelClass}>New password</label>
           <input id="password" type="password" minLength={6} value={form.password}
             onChange={(e) => updateField("password", e.target.value)} className={inputClass} />
-          <p className="text-xs text-stone-500 mt-1">Leave empty to keep your current password</p>
+          <p className="text-xs text-muted mt-1">Leave empty to keep your current password</p>
         </div>
 
         {message && (
-          <p className={`text-sm ${message.isError ? "text-red-600" : "text-emerald-700"}`}>{message.text}</p>
+          <p className={`text-sm ${message.isError ? "text-red-600" : "text-accent"}`}>{message.text}</p>
         )}
 
         <button
           type="submit"
           disabled={isSaving}
-          className="rounded-lg bg-emerald-800 px-6 py-2.5 text-white font-medium hover:bg-emerald-900 transition disabled:opacity-50"
+          className="rounded-lg bg-accent px-6 py-2.5 text-accent-contrast font-medium hover:bg-accent-strong transition disabled:opacity-50"
         >
           {isSaving ? "Saving..." : "Save changes"}
         </button>

@@ -77,16 +77,16 @@ export default function CartPage() {
   };
 
   if (isLoading) {
-    return <p className="text-stone-500">Loading your cart...</p>;
+    return <p className="text-muted">Loading your cart...</p>;
   }
 
   if (!cart || cart.items.length === 0) {
     return (
-      <div className="bg-white rounded-2xl border border-stone-200 p-8 text-center">
-        <p className="text-stone-600 mb-4">Your cart is empty.</p>
+      <div className="bg-surface rounded-2xl border border-line p-8 text-center">
+        <p className="text-muted mb-4">Your cart is empty.</p>
         <Link
           href="/products"
-          className="text-emerald-800 font-medium hover:underline"
+          className="text-accent font-medium hover:underline"
         >
           Browse the shop
         </Link>
@@ -100,14 +100,14 @@ export default function CartPage() {
   );
 
   return (
-    <div className="bg-white rounded-2xl border border-stone-200 p-6 sm:p-8">
+    <div className="bg-surface rounded-2xl border border-line p-6 sm:p-8">
       <ul className="divide-y divide-stone-200">
         {cart.items.map((item) => (
           <li
             key={item.productId}
             className="py-4 flex flex-wrap items-center gap-4"
           >
-            <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-stone-100 shrink-0">
+            <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-surface-muted shrink-0">
               {productImageUrl(item.productImage) && (
                 <Image
                   src={productImageUrl(item.productImage)!}
@@ -120,10 +120,10 @@ export default function CartPage() {
             </div>
 
             <div className="flex-1 min-w-48">
-              <p className="font-medium text-stone-900 first-letter:uppercase">
+              <p className="font-medium text-ink first-letter:uppercase">
                 {item.productName}
               </p>
-              <p className="text-sm text-stone-500">
+              <p className="text-sm text-muted">
                 {formatPrice(item.unitPrice * (1 + item.vatRate))} each
               </p>
             </div>
@@ -134,11 +134,11 @@ export default function CartPage() {
                   changeQuantity(item.productId, item.quantity - 1)
                 }
                 disabled={isBusy}
-                className="w-8 h-8 rounded-md border border-stone-300 text-stone-700 hover:bg-stone-100 disabled:opacity-50"
+                className="w-8 h-8 rounded-md border border-line text-muted hover:bg-surface-muted disabled:opacity-50"
               >
                 −
               </button>
-              <span className="w-8 text-center text-stone-900">
+              <span className="w-8 text-center text-ink">
                 {item.quantity}
               </span>
               <button
@@ -146,20 +146,20 @@ export default function CartPage() {
                   changeQuantity(item.productId, item.quantity + 1)
                 }
                 disabled={isBusy}
-                className="w-8 h-8 rounded-md border border-stone-300 text-stone-700 hover:bg-stone-100 disabled:opacity-50"
+                className="w-8 h-8 rounded-md border border-line text-muted hover:bg-surface-muted disabled:opacity-50"
               >
                 +
               </button>
             </div>
 
-            <p className="w-28 text-right text-stone-900">
+            <p className="w-28 text-right text-ink">
               {formatPrice(item.totalPriceIncVat)}
             </p>
 
             <button
               onClick={() => changeQuantity(item.productId, 0)}
               disabled={isBusy}
-              className="text-sm text-stone-500 hover:text-red-600 disabled:opacity-50"
+              className="text-sm text-muted hover:text-red-600 disabled:opacity-50"
             >
               Remove
             </button>
@@ -167,23 +167,23 @@ export default function CartPage() {
         ))}
       </ul>
 
-      <div className="mt-6 pt-6 border-t border-stone-200 flex flex-wrap items-center justify-between gap-4">
+      <div className="mt-6 pt-6 border-t border-line flex flex-wrap items-center justify-between gap-4">
         <button
           onClick={clearCart}
           disabled={isBusy}
-          className="text-sm text-stone-500 hover:text-red-600 disabled:opacity-50"
+          className="text-sm text-muted hover:text-red-600 disabled:opacity-50"
         >
           Clear cart
         </button>
 
         <div className="flex items-center gap-6">
-          <p className="text-lg text-stone-900">
+          <p className="text-lg text-ink">
             Total <span className="font-semibold">{formatPrice(total)}</span>
           </p>
           <button
             onClick={checkout}
             disabled={isBusy}
-            className="rounded-lg bg-emerald-800 px-6 py-3 text-white font-medium hover:bg-emerald-900 transition disabled:opacity-50"
+            className="rounded-lg bg-accent px-6 py-3 text-accent-contrast font-medium hover:bg-accent-strong transition disabled:opacity-50"
           >
             Checkout
           </button>
