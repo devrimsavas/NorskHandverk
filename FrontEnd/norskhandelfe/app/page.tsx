@@ -1,64 +1,81 @@
+import Image from "next/image";
+import Link from "next/link";
+import FeaturedProducts from "@/components/FeaturedProducts";
+
+const highlights = [
+  {
+    title: "Made by hand in Norway",
+    text: "Every piece is crafted by local makers, from Setesdal wool to fjord-side ceramics.",
+  },
+  {
+    title: "Natural materials",
+    text: "Norwegian oak, pure wool and stoneware, finished to last for generations.",
+  },
+  {
+    title: "Secure checkout",
+    text: "Card payments are handled by Stripe. Cancel before shipping and get a full refund.",
+  },
+];
+
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gray-100 py-16">
-      <main className="max-w-6xl mx-auto px-6 space-y-16">
+    <div className="bg-page">
+      {/* Hero */}
+      <section className="relative h-[70vh] min-h-105 overflow-hidden">
+        <Image
+          src="/images/hero.jpg"
+          alt="A Nordic workshop with handmade crafts by a fjord"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-linear-to-r from-stone-950/70 via-stone-950/30 to-transparent" />
 
-        {/* Hero */}
-        <section className="text-center space-y-6">
-          <h1 className="text-5xl font-bold text-gray-900">
-            NorskHandel
-          </h1>
-
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            A structured commerce backend built with ASP.NET Core,
-            designed for scalability, performance, and seamless AI integration.
-          </p>
-        </section>
-
-        {/* Core Vision */}
-        <section className="grid md:grid-cols-3 gap-8">
-
-          <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
-            <h3 className="text-xl font-semibold text-gray-800 mb-3">
-              Enterprise Backend
-            </h3>
-            <p className="text-gray-600 text-sm leading-relaxed">
-              Clean architecture, domain-driven design, and full C# backend control.
+        <div className="relative h-full max-w-6xl mx-auto px-4 sm:px-6 flex items-center">
+          <div className="max-w-lg text-white space-y-5">
+            <p className="text-sm uppercase tracking-widest text-stone-200">
+              Norsk håndverk
             </p>
-          </div>
-
-          <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
-            <h3 className="text-xl font-semibold text-gray-800 mb-3">
-              AI-Ready Infrastructure
-            </h3>
-            <p className="text-gray-600 text-sm leading-relaxed">
-              Built to integrate modern AI-powered commerce systems and automation engines.
+            <h1 className="text-4xl sm:text-5xl font-semibold leading-tight">
+              Handmade crafts from Norwegian makers
+            </h1>
+            <p className="text-lg text-stone-200">
+              Wood, wool and clay, shaped by hand and made to be used every day.
             </p>
+            <Link
+              href="/products"
+              className="inline-block rounded-lg bg-white px-6 py-3 font-medium text-stone-900 hover:bg-stone-100 transition"
+            >
+              Shop the collection
+            </Link>
           </div>
+        </div>
+      </section>
 
-          <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
-            <h3 className="text-xl font-semibold text-gray-800 mb-3">
-              Structured Administration
-            </h3>
-            <p className="text-gray-600 text-sm leading-relaxed">
-              Manage products, customers, brands, categories, and carts with precision.
-            </p>
+      {/* Highlights */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-16 grid md:grid-cols-3 gap-8">
+        {highlights.map((item) => (
+          <div key={item.title}>
+            <h2 className="text-lg font-semibold text-ink">{item.title}</h2>
+            <p className="mt-2 text-muted leading-relaxed">{item.text}</p>
           </div>
+        ))}
+      </section>
 
-        </section>
-
-        {/* Vision Statement */}
-        <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center space-y-6">
-          <h2 className="text-2xl font-bold text-gray-900">
-            Intelligent Commerce Infrastructure
-          </h2>
-          <p className="text-gray-600 max-w-3xl mx-auto">
-            NorskHandel is not just an admin dashboard — it is a backend-first
-            commerce foundation built to evolve into AI-driven trade systems.
-          </p>
-        </section>
-
-      </main>
+      {/* Featured products */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-20">
+        <div className="flex items-end justify-between mb-8">
+          <h2 className="text-2xl font-semibold text-ink">Featured pieces</h2>
+          <Link
+            href="/products"
+            className="text-sm font-medium text-accent hover:underline"
+          >
+            View all
+          </Link>
+        </div>
+        <FeaturedProducts />
+      </section>
     </div>
   );
 }

@@ -14,9 +14,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
   return (
     <Link
       href={`/products/${product.id}`}
-      className="group block rounded-2xl bg-white border border-stone-200 overflow-hidden hover:shadow-md transition"
+      className="group block rounded-2xl bg-surface border border-line overflow-hidden hover:shadow-md transition"
     >
-      <div className="relative aspect-square bg-stone-100">
+      <div className="relative aspect-square bg-surface-muted">
         {imageUrl && (
           <Image
             src={imageUrl}
@@ -34,13 +34,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
       </div>
 
       <div className="p-4 space-y-1">
-        <p className="text-xs uppercase tracking-wide text-stone-500">
+        <p className="text-xs uppercase tracking-wide text-muted">
           {product.categoryName}
         </p>
-        <h3 className="font-medium text-stone-900 first-letter:uppercase">
+        <h3 className="font-medium text-ink first-letter:uppercase">
           {product.title}
         </h3>
-        <p className="text-stone-700">{formatPrice(product.priceIncVat)}</p>
+        <p className="text-ink">{formatPrice(product.priceIncVat)}</p>
       </div>
     </Link>
   );

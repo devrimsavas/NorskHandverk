@@ -8,22 +8,24 @@ const MainNav = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === "Admin";
 
-  const navLink = (href: string, label: string) => (
-    <Link
-      href={href}
-      className={`transition font-medium text-base md:text-lg px-3 py-1 rounded-md ${
-        pathname === href
-          ? "bg-amber-500 text-amber-950"
-          : "text-blue hover:bg-white hover:text-amber-950"
-      }`}
-    >
-      {label}
-    </Link>
-  );
+  const navLink = (href: string, label: string) => {
+    // Shop stays active on product detail pages too
+    const isActive = pathname === href || pathname.startsWith(`${href}/`);
+
+    return (
+      <Link
+        href={href}
+        className={`text-sm font-medium transition ${
+          isActive ? "text-white" : "text-stone-400 hover:text-white"
+        }`}
+      >
+        {label}
+      </Link>
+    );
+  };
 
   return (
-    <nav className="flex gap-4 md:gap-6">
-      {navLink("/", "Home")}
+    <nav className="flex items-center gap-6">
       {navLink("/products", "Shop")}
 
       {/* Old admin pages: visible to admins only until they move under /admin */}

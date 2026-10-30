@@ -1,17 +1,55 @@
 @import "tailwindcss";
 
+/* Dark mode is switched by a "dark" class on <html> */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Light theme: linen, birch and fjord green */
 :root {
+  --page: #f2ede4;
+  --surface: #faf7f1;
+  --surface-muted: #ebe4d8;
+  --line: #ddd4c5;
+  --ink: #2b2620;
+  --muted: #6f665b;
+  --accent: #2f5d50;
+  --accent-strong: #234a3f;
+  --accent-contrast: #ffffff;
+
+  /* Kept for the old pages until they are removed */
   --background: #ffffff;
   --foreground: #171717;
 }
 
+/* Dark theme: polar night with a warm tone */
+.dark {
+  --page: #15130f;
+  --surface: #1f1b17;
+  --surface-muted: #2a251f;
+  --line: #3a332b;
+  --ink: #ede6da;
+  --muted: #a89e90;
+  --accent: #7fb3a2;
+  --accent-strong: #9cc7b8;
+  --accent-contrast: #15130f;
+}
+
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-contrast: var(--accent-contrast);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
-  /* Add your custom colors here for Tailwind v4 */
+  /* Old colors, used by the old pages until they are removed */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
   --color-primary-dark: #1e40af;
   --color-primary-light: #3b82f6;
   --color-accent-1: #f59e0b;
@@ -19,4 +57,8 @@
   --color-secondary: #64748b;
   --color-secondary-dark: #475569;
 }
-/* ... rest of your css */
+
+body {
+  background-color: var(--page);
+  color: var(--ink);
+}
