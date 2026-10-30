@@ -116,7 +116,10 @@ namespace NorskHandverk.Controllers.CartController
             Cart cartToReturn = null;
 
             //product check
-            var product = await _dbContext.Products.Include(p=>p.Category).FirstOrDefaultAsync(p=>p.Id==createCartDTO.CartItem.ProductId);
+            var product = await _dbContext.Products
+                .Include(p => p.Category)
+                .FirstOrDefaultAsync(p => p.Id == createCartDTO.CartItem.ProductId && !p.IsDeleted);
+
             if (product == null) return NotFound("Product does not exist");
             //stock control
             if (product.Quantity<createCartDTO.CartItem.Quantity)

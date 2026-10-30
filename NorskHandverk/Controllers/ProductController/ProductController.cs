@@ -23,7 +23,11 @@ namespace NorskHandverk.Controllers.ProductController
         //GET ALL PRODUCTS 
         public async Task<ActionResult<IEnumerable<ProductReadDTO>>> GetAllProducts()
         {
-            var products = await _dbContext.Products.Include(p => p.Category).Include(p => p.Brand).ToListAsync();
+            var products = await _dbContext.Products
+                .Include(p => p.Category)
+                .Include(p => p.Brand)
+                .Where(p => !p.IsDeleted)
+                .ToListAsync();
             var results = _mapper.Map<IEnumerable<ProductReadDTO>>(products);
             return Ok(results);
         }
@@ -31,7 +35,10 @@ namespace NorskHandverk.Controllers.ProductController
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductReadDTO>> GetAProduct(int id)
         {
-            var existedProduct=await _dbContext.Products.Include(p=>p.Category).Include(p=>p.Brand).FirstOrDefaultAsync(p=>p.Id == id);
+            var existedProduct = await _dbContext.Products
+                .Include(p => p.Category)
+                .Include(p => p.Brand)
+                .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
             if (existedProduct ==null)
             {
                 return NotFound(new { Message = "Product does not exist" });
