@@ -16,6 +16,10 @@ namespace NorskHandverk.Mappings
                 .ForMember(dest=>dest.ProductName,opt=>opt.MapFrom(src=>src.ProductName));
 
             CreateMap<UpdateCartItemDTO, CartItem>();
+            CreateMap<CartItem, ReadCartItemDTO>()
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.ProductName))
+                .ForMember(dest => dest.ProductImage, opt => opt.MapFrom(src => src.Product != null ? src.Product.ProductImage : string.Empty));
+
         }
       
     }

@@ -18,7 +18,7 @@ const MainNav=()=>{
         return (
             <nav className={`flex gap-4 md:gap-6 `}>
                 {navLink("/","Home")}
-                {navLink("/productpage","Products")}
+                {navLink("/products","Shop")}
                 {navLink("/customerpage","Customers")}
                 {navLink("/brandspage","Brands")}
                 {navLink("/categorypage","Categories")}

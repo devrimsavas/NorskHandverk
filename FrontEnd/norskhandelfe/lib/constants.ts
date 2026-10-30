@@ -29,6 +29,13 @@ export const API_CHECK_OUT_ORDER = (customerId: number) =>
 // PATHS FOR apiFetch (the base url is added by apiFetch)
 export const PATHS = {
   login: "/Auth/login",
-  register:"/Customer",
+  register: "/Customer",
+  products: "/Product",
+  product: (id: number | string) => `/Product/${id}`,
+  cart: "/Cart",
+  myProfile: "/Customer/me",
+  myCart: "/Cart/me",
+  updateCart: "/Cart/updatecart",
+  clearCart: "/Cart/clearcart",
+  checkout: "/Order/checkout",
 };
-

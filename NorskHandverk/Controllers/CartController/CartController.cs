@@ -89,7 +89,7 @@ namespace NorskHandverk.Controllers.CartController
             var cart = await _dbContext.Carts
                 .Include(c => c.CartStatus)
                 .Include(c => c.Customer)
-                .Include(c => c.Items)
+                .Include(c => c.Items).ThenInclude(i=>i.Product)
                 .FirstOrDefaultAsync(c => c.CustomerId == customerId.Value && c.CartStatusId == (int)CartStatusType.Active);
 
             if (cart == null)

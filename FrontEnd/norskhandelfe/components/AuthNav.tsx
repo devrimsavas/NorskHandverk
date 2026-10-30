@@ -39,7 +39,9 @@ const AuthNav = () => {
 
   return (
     <div className="flex items-center gap-3">
-      <span className="text-sm text-stone-300">Hi, {user.name}</span>
+      <Link href="/account" className="text-sm text-stone-300 hover:text-white">
+        Hi, {user.name}
+      </Link>
       <button
         onClick={handleLogout}
         className="text-sm font-medium rounded-md border border-stone-500 px-3 py-1.5 text-stone-200 hover:bg-stone-800"

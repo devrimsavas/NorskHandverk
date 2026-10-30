@@ -1,5 +1,6 @@
 import Cart from '@/components/Cart'
 
+
 const CartPage = () => {
   return (
     <section className="min-h-screen bg-rose-50 py-10">
