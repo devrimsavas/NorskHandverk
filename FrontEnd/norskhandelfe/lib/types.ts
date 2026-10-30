@@ -31,7 +31,7 @@ export interface Customer {
 export interface CartItem {
   productId: number;
   productName: string;
-  productImage:string;
+  productImage: string;
   unitPrice: number;
   vatRate: number;
   quantity: number;
@@ -45,4 +45,24 @@ export interface Cart {
   customerId: number;
   statusName: string;
   items: CartItem[];
+}
+
+// Matches ReadOrderItemDTO and ReadOrderDTO in the backend
+export interface OrderItem {
+  productId: number;
+  productName: string;
+  unitPrice: number;
+  quantity: number;
+  totalPrice: number;
+}
+
+export interface Order {
+  id: number;
+  orderNumber: string;
+  statusName: string;
+  customerId: number;
+  orderDate: string;
+  items: OrderItem[];
+  totalPrice: number;
+  totalPriceIncVat: number;
 }

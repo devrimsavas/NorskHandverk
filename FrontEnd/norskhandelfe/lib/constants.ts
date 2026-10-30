@@ -38,4 +38,6 @@ export const PATHS = {
   updateCart: "/Cart/updatecart",
   clearCart: "/Cart/clearcart",
   checkout: "/Order/checkout",
+  myOrders: "/Order/me",
+  cancelOrder: (id: number) => `/Order/cancel/${id}`,
 };
