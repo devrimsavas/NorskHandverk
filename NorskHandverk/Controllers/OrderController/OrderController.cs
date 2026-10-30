@@ -9,6 +9,8 @@ using NorskHandverk.Models.OrderModels;
 using NorskHandverk.Models.ProductModels;
 using NorskHandverk.Models.TransactionModels;
 using NorskHandverk.Services;
+using Microsoft.AspNetCore.Authorization;
+using NorskHandverk.Extensions;
 using Stripe;
 
 using System.Reflection.Metadata.Ecma335;
@@ -38,6 +40,8 @@ namespace NorskHandverk.Controllers.OrderController
             
             
         }
+
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         //GET ALL ORDERS 
         public async Task<ActionResult<ICollection<ReadOrderDTO>>> GetAllOrders()
@@ -47,30 +51,68 @@ namespace NorskHandverk.Controllers.OrderController
             var readDTO=_mapper.Map<ICollection<ReadOrderDTO>>(orders);
             return Ok(readDTO);
         }
-        //get order by id 
+
+
+        //GET CURRENT CUSTOMER'S ORDERS (from the JWT token)
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<ActionResult<ICollection<ReadOrderDTO>>> GetMyOrders()
+        {
+            var customerId = User.GetCustomerId();
+            if (customerId == null)
+            {
+                return Unauthorized();
+            }
+
+            var orders = await _dbContext.Orders
+                .Include(o => o.OrderStatus)
+                .Include(o => o.Items)
+                .Where(o => o.CustomerId == customerId.Value)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+
+            return Ok(_mapper.Map<ICollection<ReadOrderDTO>>(orders));
+        }
+
+
+        //GET ORDER BY ID (admins see every order, customers only their own)
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<ReadOrderDTO>> GetOrderById(int id)
         {
-            var order=await _dbContext.Orders
-                .Include(o=>o.OrderStatus)
-                .Include(o=>o.Customer)
-                .Include(o=>o.Items)
-                .ThenInclude(i=>i.Product)
-                .FirstOrDefaultAsync(o=>o.Id==id);    
-            if (order==null)
+            var customerId = User.GetCustomerId();
+            if (customerId == null)
             {
-                return NotFound(new { Message = "Order Not found" });
+                return Unauthorized();
             }
 
-            var readDTO = _mapper.Map<ReadOrderDTO>(order);
-            return Ok(readDTO);                
+            var order = await _dbContext.Orders
+                .Include(o => o.OrderStatus)
+                .Include(o => o.Items)
+                .FirstOrDefaultAsync(o => o.Id == id);
 
+            // Someone else's order is reported as not found, so we do not reveal that it exists
+            if (order == null || (!User.IsInRole("Admin") && order.CustomerId != customerId.Value))
+            {
+                return NotFound(new { Message = "Order not found" });
+            }
+
+            return Ok(_mapper.Map<ReadOrderDTO>(order));
         }
-        //CHECK OUT 
-        //updated with payment service instead of direct 
-        [HttpPost("checkout/{customerId}")]
-        public async Task<ActionResult<object>> Checkout(int customerId)
+
+
+       
+        //CHECK OUT (the customer comes from the JWT token)
+        [Authorize]
+        [HttpPost("checkout")]
+        public async Task<ActionResult<object>> Checkout()
         {
+            var tokenCustomerId = User.GetCustomerId();
+            if (tokenCustomerId == null)
+            {
+                return Unauthorized();
+            }
+            var customerId = tokenCustomerId.Value;
             // 1. FIRST CHECK: Does the user already have an order awaiting payment?
             // This prevents creating new orders and new Stripe intents on page refresh/retry.
             var existingOrder = await _dbContext.Orders
@@ -185,16 +227,23 @@ namespace NorskHandverk.Controllers.OrderController
             return Ok(new { Order = readDTO, ClientSecret = paymentIntent.ClientSecret });
         }
 
-        
+
         //CANCEL ORDER 
+        [Authorize]
         [HttpPost("cancel/{orderId}")]
         public async Task<ActionResult> CancelOrder(int orderId)
         {
+            var customerId = User.GetCustomerId();
+            if (customerId==null)
+            {
+                return Unauthorized();
+            }
             var order = await _dbContext.Orders
                 .Include(o => o.Items)
                 .FirstOrDefaultAsync(o => o.Id == orderId);
 
-            if (order == null)
+            // Someone else's order is reported as not found
+            if (order == null || (!User.IsInRole("Admin") && order.CustomerId != customerId.Value))
             {
                 return NotFound(new { Message = "Order not found." });
             }
