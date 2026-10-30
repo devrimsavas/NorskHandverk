@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import MainNav from "./MainNav";
+import AuthNav from "./AuthNav";
 
 const PageHeader=()=> {
     return(
@@ -8,6 +9,7 @@ const PageHeader=()=> {
             <div className="relative z-10 flex justify-between items-center p-2">
                 
                 <MainNav/>
+                <AuthNav/>
                 
             </div>
         </header>
