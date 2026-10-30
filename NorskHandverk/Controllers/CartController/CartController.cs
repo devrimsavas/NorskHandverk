@@ -1,11 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using NorskHandverk.DTOs.CartDTOs;
+using NorskHandverk.Extensions;
+using NorskHandverk.Mappings;
 using NorskHandverk.Models;
 using NorskHandverk.Models.CartModels;
-using NorskHandverk.DTOs.CartDTOs;
 using NorskHandverk.Models.ProductModels;
-using NorskHandverk.Mappings;
-using AutoMapper;
 
 namespace NorskHandverk.Controllers.CartController
 {
@@ -23,7 +25,9 @@ namespace NorskHandverk.Controllers.CartController
         }
 
         //GET ALL CARTS
+        [Authorize(Roles = "Admin")]
         [HttpGet]
+        
         public async Task<ActionResult<ICollection<ReadCartDTO>>> GetCarts()
         {
             var carts=await _dbContext.Carts.Include(c=>c.CartStatus).Include(c=>c.Customer).Include(c=>c.Items).ToListAsync();  
@@ -32,6 +36,7 @@ namespace NorskHandverk.Controllers.CartController
 
         }
         //GET ALL ACTIVE CARTS
+        [Authorize(Roles = "Admin")]
         [HttpGet("active")]
         public async Task<ActionResult<ICollection<ReadCartDTO>>> GetActiveCarts()
         {
@@ -40,6 +45,7 @@ namespace NorskHandverk.Controllers.CartController
             return Ok(readDTos);
         }
         //GET CART BY ID
+        [Authorize(Roles = "Admin")]
         [HttpGet("active/{id}")] 
         public async Task<ActionResult<ReadCartDTO>> GetCartById(int id)
         {
@@ -53,6 +59,7 @@ namespace NorskHandverk.Controllers.CartController
 
         }
         //GET CART BY CUSTOMER ID 
+        [Authorize(Roles = "Admin")]
         [HttpGet("customer/{id}")]
         public async Task<ActionResult<ICollection<ReadCartDTO>>> GetCartByCustomerId(int id)
         {
@@ -68,11 +75,43 @@ namespace NorskHandverk.Controllers.CartController
             return Ok(readDTO);
         }
 
+        //GET CURRENT CUSTOMER'S ACTIVE CART (from the JWT token)
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<ActionResult<ReadCartDTO>> GetMyCart()
+        {
+            var customerId = User.GetCustomerId();
+            if (customerId == null)
+            {
+                return Unauthorized();
+            }
+
+            var cart = await _dbContext.Carts
+                .Include(c => c.CartStatus)
+                .Include(c => c.Customer)
+                .Include(c => c.Items)
+                .FirstOrDefaultAsync(c => c.CustomerId == customerId.Value && c.CartStatusId == (int)CartStatusType.Active);
+
+            if (cart == null)
+            {
+                return NotFound(new { Message = "No active cart" });
+            }
+
+            return Ok(_mapper.Map<ReadCartDTO>(cart));
+        }
+
 
         //CREATE CART 
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<ReadCartDTO>> CreateCart(CreateCartDTO createCartDTO)
         {
+            var customerId = User.GetCustomerId();
+            if (customerId == null)
+            {
+                return Unauthorized();
+            }
+
             //empty object for DTO return 
             Cart cartToReturn = null;
 
@@ -92,7 +131,9 @@ namespace NorskHandverk.Controllers.CartController
             }
 
 
-            var existedCart=await _dbContext.Carts.Include(c=>c.Items).FirstOrDefaultAsync(c=>c.Customer.Id==createCartDTO.CustomerId && c.CartStatus.Name=="active");
+            var existedCart = await _dbContext.Carts
+                .Include(c => c.Items)
+                .FirstOrDefaultAsync(c => c.CustomerId == customerId.Value && c.CartStatusId == (int)CartStatusType.Active);
 
             //if customer has already a cart products will be added to this cart
             if (existedCart!= null)
@@ -127,11 +168,11 @@ namespace NorskHandverk.Controllers.CartController
             else
             {
                 //check cart active status 
-                var activeStatus=await _dbContext.CartStatuses.FirstOrDefaultAsync(s=>s.Name=="active");
+                
                 
                 var newCart = new Cart
                 {
-                    CustomerId = createCartDTO.CustomerId,
+                    CustomerId = customerId.Value,
                     CartStatusId = (int)CartStatusType.Active,
                     CartNumber = "CRT-" + DateTime.Now.Ticks,
                     Items=new List<CartItem>()
@@ -166,12 +207,21 @@ namespace NorskHandverk.Controllers.CartController
 
         }
         //REMOVE ITEM FROM EXISTED CART 
+        [Authorize]
         [HttpPost("removeitem")]
 
         public async Task<ActionResult<ReadCartDTO>> RemoveItem(RemoveCartItemDTO removeCartItemDTO )
         {
+            var customerId = User.GetCustomerId();
+            if (customerId == null)
+            {
+                return Unauthorized();
+            }
             //find existed cart
-            var existedCart=await _dbContext.Carts.Include(c=>c.CartStatus).Include(c=>c.Items).ThenInclude(i=>i.Product).FirstOrDefaultAsync(c=>c.CustomerId==removeCartItemDTO.CustomerId && c.CartStatus.Name=="active");
+            var existedCart = await _dbContext.Carts
+                .Include(c => c.CartStatus)
+                .Include(c => c.Items).ThenInclude(i => i.Product)
+                .FirstOrDefaultAsync(c => c.CustomerId == customerId.Value && c.CartStatusId == (int)CartStatusType.Active);
             if (existedCart==null)
             {
                 return NotFound(new { Message = "Active cart not found" });
@@ -222,12 +272,21 @@ namespace NorskHandverk.Controllers.CartController
         }
 
         //CLEAR CART 
-        [HttpPost("clearcart/{customerId}")]
-        public async Task<ActionResult<ReadCartDTO>> ClearCart(int customerId)
+        [Authorize]
+        [HttpPost("clearcart")]
+        public async Task<ActionResult<ReadCartDTO>> ClearCart()
         {
+            var customerId = User.GetCustomerId();            
+            if (customerId == null)
+            {
+                return Unauthorized();
+            }
+
+
+
             //find cart
             var cart = await _dbContext.Carts.Include(c => c.CartStatus).Include(c => c.Items).ThenInclude(i => i.Product)
-                .FirstOrDefaultAsync(c => c.CustomerId == customerId && c.CartStatusId == (int)CartStatusType.Active);
+                .FirstOrDefaultAsync(c => c.CustomerId == customerId.Value && c.CartStatusId == (int)CartStatusType.Active);
 
             //check 
             if (cart==null)
@@ -252,12 +311,19 @@ namespace NorskHandverk.Controllers.CartController
             return Ok(readDTO);
         }
         //UPDATE CART 
+        [Authorize]
         [HttpPost("updatecart")]
         public async Task<ActionResult<ReadCartDTO>> UpdateCart(UpdateCartItemDTO updateCartItemDTO)
         {
+            var customerId = User.GetCustomerId();
+            if (customerId==null)
+            {
+                return Unauthorized();
+            }
+
             //find cart 
             var cart = await _dbContext.Carts.Include(c => c.CartStatus).Include(c => c.Items).ThenInclude(i => i.Product)
-                .FirstOrDefaultAsync(c => c.CustomerId == updateCartItemDTO.CustomerId && c.CartStatus.Name=="active");
+                .FirstOrDefaultAsync(c => c.CustomerId == customerId.Value && c.CartStatusId == (int)CartStatusType.Active);
             if (cart == null) 
             {
                 return NotFound(new { Message = "Cart does not exist" });
