@@ -20,7 +20,11 @@ namespace NorskHandverk.Mappings
 
             CreateMap<ProductCreateDTO, Product>()
                 .ForMember(dest => dest.Title,
-                opt => opt.MapFrom(src => src.Title.Trim().ToLower()));
+                    opt => opt.MapFrom(src => src.Title.Trim().ToLower()))
+                .ForMember(dest => dest.Description,
+                    opt => opt.MapFrom(src => src.Description ?? string.Empty))
+                .ForMember(dest => dest.ProductImage,
+                    opt => opt.MapFrom(src => src.ProductImage ?? string.Empty));
 
             CreateMap<ProductUpdateDTO, Product>()
                 .ForMember(dest => dest.Title,

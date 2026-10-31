@@ -4,10 +4,13 @@ export interface Product {
   title: string;
   description: string;
   price: number;
+  discount: number;
   productImage: string;
   priceIncVat: number;
   quantity: number;
+  categoryId: number;
   categoryName: string;
+  brandId: number;
   brandName: string;
   dateAdded: string;
   status: "Available" | "Out_Of_Stock";
@@ -65,4 +68,19 @@ export interface Order {
   items: OrderItem[];
   totalPrice: number;
   totalPriceIncVat: number;
+}
+
+// Matches BrandReadDTO in the backend
+export interface Brand {
+  id: number;
+  name: string;
+}
+
+// Matches CategoryReadDTO in the backend
+export interface Category {
+  id: number;
+  name: string;
+  description: string;
+  defaultVatRate: number;
+  isDeleted: boolean;
 }

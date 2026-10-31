@@ -40,4 +40,6 @@ export const PATHS = {
   checkout: "/Order/checkout",
   myOrders: "/Order/me",
   cancelOrder: (id: number) => `/Order/cancel/${id}`,
+  brands: "/Brand",
+  categories: "/Category",
 };
