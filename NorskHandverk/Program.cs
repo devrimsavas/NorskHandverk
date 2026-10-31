@@ -101,6 +101,8 @@ builder.Services.AddSwaggerGen(options =>
 
 });
 
+builder.Services.AddSingleton<IImageStorage, LocalImageStorage>();  
+
 var app = builder.Build();
 // Create the first admin user if none exists
 await AdminSeeder.SeedAsync(app.Services);
@@ -114,6 +116,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();

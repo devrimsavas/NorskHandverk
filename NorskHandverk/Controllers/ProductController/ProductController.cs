@@ -5,6 +5,7 @@ using NorskHandverk.Models.ProductModels;
 using NorskHandverk.DTOs.ProductDTOs;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using NorskHandverk.Services;
 namespace NorskHandverk.Controllers.ProductController
 
 {
@@ -13,11 +14,14 @@ namespace NorskHandverk.Controllers.ProductController
     public class ProductController:ControllerBase 
     {
         private readonly AppDbContext _dbContext;
-        private readonly IMapper _mapper; 
-        public ProductController(AppDbContext dbContext, IMapper mapper)
+        private readonly IMapper _mapper;
+        private readonly IImageStorage _imageStorage;
+
+        public ProductController(AppDbContext dbContext, IMapper mapper,IImageStorage imageStorage)
         {
             _dbContext = dbContext;
             _mapper = mapper;
+            _imageStorage=imageStorage;
         }
         [HttpGet]
         //GET ALL PRODUCTS 
@@ -145,6 +149,56 @@ namespace NorskHandverk.Controllers.ProductController
             var readTo=_mapper.Map<ProductReadDTO>(existedProduct);
             return Ok(readTo);
         }
+
+        private static readonly string[] AllowedImageExtensions = { ".jpg", ".jpeg", ".png", ".webp" };
+        private const long MaxImageSize = 5 * 1024 * 1024; // 5 MB
+
+        //UPLOAD PRODUCT IMAGE
+        [Authorize(Roles = "Admin")]
+        [HttpPost("{id}/image")]
+        public async Task<ActionResult<ProductReadDTO>> UploadProductImage(int id, IFormFile file)
+        {
+            var product = await _dbContext.Products
+                .Include(p => p.Category)
+                .Include(p => p.Brand)
+                .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
+
+            if (product == null)
+            {
+                return NotFound(new { Message = "Product does not exist" });
+            }
+
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest(new { Message = "No file was uploaded." });
+            }
+
+            if (file.Length > MaxImageSize)
+            {
+                return BadRequest(new { Message = "The image must be 5 MB or smaller." });
+            }
+
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (!AllowedImageExtensions.Contains(extension) || !file.ContentType.StartsWith("image/"))
+            {
+                return BadRequest(new { Message = "Only JPG, PNG and WebP images are allowed." });
+            }
+
+            var oldImage = product.ProductImage;
+
+            product.ProductImage = await _imageStorage.SaveProductImageAsync(file);
+            await _dbContext.SaveChangesAsync();
+
+            // Remove the previous file only after the new one is saved
+            if (!string.IsNullOrEmpty(oldImage))
+            {
+                await _imageStorage.DeleteProductImageAsync(oldImage);
+            }
+
+            return Ok(_mapper.Map<ProductReadDTO>(product));
+        }
+
+
 
 
 

@@ -1,5 +1,9 @@
 //BASE
 export const BASE_API_URL = process.env.NEXT_PUBLIC_BASE_API_URL;
+
+// Backend root (without /api), where uploaded files are served
+export const BACKEND_URL = (BASE_API_URL ?? "").replace(/\/api\/?$/, "");
+
 //products
 export const API_GET_ALL_PRODUCTS = `${BASE_API_URL}/product`;
 //customers
