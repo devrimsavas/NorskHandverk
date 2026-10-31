@@ -8,6 +8,7 @@ import { PATHS } from "@/lib/constants";
 import { Cart } from "@/lib/types";
 import Image from "next/image";
 import { formatPrice, productImageUrl } from "@/lib/format";
+import ProductImage from "@/components/ProductImage";
 
 export default function CartPage() {
   const router = useRouter();
@@ -108,15 +109,12 @@ export default function CartPage() {
             className="py-4 flex flex-wrap items-center gap-4"
           >
             <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-surface-muted shrink-0">
-              {productImageUrl(item.productImage) && (
-                <Image
-                  src={productImageUrl(item.productImage)!}
-                  alt={item.productName}
-                  fill
-                  sizes="64px"
-                  className="object-cover"
-                />
-              )}
+              <ProductImage
+                fileName={item.productImage}
+                alt={item.productName}
+                sizes="64px"
+                compact
+              />
             </div>
 
             <div className="flex-1 min-w-48">
@@ -138,9 +136,7 @@ export default function CartPage() {
               >
                 −
               </button>
-              <span className="w-8 text-center text-ink">
-                {item.quantity}
-              </span>
+              <span className="w-8 text-center text-ink">{item.quantity}</span>
               <button
                 onClick={() =>
                   changeQuantity(item.productId, item.quantity + 1)

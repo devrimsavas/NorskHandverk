@@ -9,6 +9,7 @@ import { PATHS } from "@/lib/constants";
 import { Product } from "@/lib/types";
 import { formatPrice, productImageUrl } from "@/lib/format";
 import { useAuth } from "@/context/AuthContext";
+import ProductImage from "@/components/ProductImage";
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -109,25 +110,18 @@ export default function ProductDetailPage() {
   return (
     <section className="min-h-screen bg-page py-12">
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
-        <Link
-          href="/products"
-          className="text-sm text-muted hover:text-ink"
-        >
+        <Link href="/products" className="text-sm text-muted hover:text-ink">
           ← Back to the shop
         </Link>
 
         <div className="mt-6 grid md:grid-cols-2 gap-10">
           <div className="relative aspect-square rounded-2xl overflow-hidden bg-surface-muted">
-            {imageUrl && (
-              <Image
-                src={imageUrl}
-                alt={product.title}
-                fill
-                sizes="(min-width: 768px) 50vw, 100vw"
-                className="object-cover"
-                priority
-              />
-            )}
+            <ProductImage
+              fileName={product.productImage}
+              alt={product.title}
+              sizes="(min-width: 768px) 50vw, 100vw"
+              priority
+            />
           </div>
 
           <div className="space-y-5">
@@ -143,9 +137,7 @@ export default function ProductDetailPage() {
             <p className="text-2xl text-ink">
               {formatPrice(product.priceIncVat)}
             </p>
-            <p className="text-muted leading-relaxed">
-              {product.description}
-            </p>
+            <p className="text-muted leading-relaxed">{product.description}</p>
 
             <p className="text-sm text-muted">
               {isSoldOut ? "Sold out" : `${product.quantity} in stock`}

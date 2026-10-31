@@ -7,6 +7,7 @@ import { apiFetch } from "@/lib/api";
 import { PATHS } from "@/lib/constants";
 import { Product } from "@/lib/types";
 import { formatPrice, productImageUrl } from "@/lib/format";
+import ProductImage from "@/components/ProductImage";
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -99,15 +100,12 @@ export default function AdminProductsPage() {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-surface-muted shrink-0">
-                        {imageUrl && (
-                          <Image
-                            src={imageUrl}
-                            alt={product.title}
-                            fill
-                            sizes="48px"
-                            className="object-cover"
-                          />
-                        )}
+                        <ProductImage
+                          fileName={product.productImage}
+                          alt={product.title}
+                          sizes="48px"
+                          compact
+                        />
                       </div>
                       <span className="font-medium first-letter:uppercase">
                         {product.title}
