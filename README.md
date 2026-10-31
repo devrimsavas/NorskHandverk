@@ -10,6 +10,12 @@ Most demo shops stop at the cart. The goal of NorskHandverk is the part that usu
 
 > Work in progress.
 
+### Screenshots
+
+**Home page and shop**
+
+![Home page and shop](docs/screenshots/shop.gif)
+
 ## Roadmap
 
 _Last updated: 2026-10-31_
