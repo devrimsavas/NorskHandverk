@@ -22,7 +22,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
             src={imageUrl}
             alt={product.title}
             fill
-            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             className="object-cover group-hover:scale-105 transition duration-300"
           />
         )}

@@ -22,8 +22,9 @@ namespace NorskHandverk.Models.ProductModels
         [Required]
         public decimal Price { get; set; }
         public string ProductImage { get; set; }= string.Empty;
-        
-        public decimal PriceIncVat => Price + (Price * Category.DefaultVatRate) - Discount;
+
+        // Discount is taken off the net price, VAT is calculated on the discounted price
+        public decimal PriceIncVat => (Price - Discount) * (1 + Category.DefaultVatRate);
         [Required]
         public int Quantity { get; set; }
         public DateTime DateAdded { get; set; }

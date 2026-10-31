@@ -101,8 +101,9 @@ namespace NorskHandverk.Controllers.ProductController
             existedProduct.Quantity = productUpdateDTO.Quantity ?? existedProduct.Quantity;
             existedProduct.IsDeleted = productUpdateDTO.IsDeleted ?? existedProduct.IsDeleted;
             existedProduct.Discount = productUpdateDTO.Discount ?? existedProduct.Discount;
+            existedProduct.Status=existedProduct.Quantity>0 ? Status.Available : Status.Out_Of_Stock;
 
-           //Category check 
+            //Category check 
             if (productUpdateDTO.CategoryId.HasValue)
             {
                 var categoryExists = await _dbContext.Categories.AnyAsync(c => c.Id == productUpdateDTO.CategoryId.Value);

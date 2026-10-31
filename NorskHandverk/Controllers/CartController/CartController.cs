@@ -40,7 +40,7 @@ namespace NorskHandverk.Controllers.CartController
         [HttpGet("active")]
         public async Task<ActionResult<ICollection<ReadCartDTO>>> GetActiveCarts()
         {
-            var activeCarts=await _dbContext.Carts.Include(c=>c.CartStatus).Include(c=>c.Customer).Include(c=>c.Items).Where(c=>c.CartStatus.Name=="active").ToListAsync();
+            var activeCarts=await _dbContext.Carts.Include(c=>c.CartStatus).Include(c=>c.Customer).Include(c=>c.Items).Where(c => c.CartStatusId == (int)CartStatusType.Active).ToListAsync();
             var readDTos = _mapper.Map<ICollection<ReadCartDTO>>(activeCarts);
             return Ok(readDTos);
         }
@@ -155,7 +155,7 @@ namespace NorskHandverk.Controllers.CartController
                     {
                         ProductId = product.Id,
                         ProductName = product.Title,
-                        UnitPrice = product.Price,
+                        UnitPrice = product.Price - product.Discount,
                         VatRate = product.Category.DefaultVatRate,
                         Quantity = createCartDTO.CartItem.Quantity,
                         CartId = existedCart.Id
@@ -185,7 +185,7 @@ namespace NorskHandverk.Controllers.CartController
                 {
                     ProductId = product.Id,
                     ProductName = product.Title,
-                    UnitPrice = product.Price,
+                    UnitPrice = product.Price - product.Discount,
                     VatRate = product.Category.DefaultVatRate,
                     Quantity = createCartDTO.CartItem.Quantity,
 
