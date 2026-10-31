@@ -46,4 +46,5 @@ export const PATHS = {
   cancelOrder: (id: number) => `/Order/cancel/${id}`,
   brands: "/Brand",
   categories: "/Category",
+  productImage: (id: number) => `/Product/${id}/image`,
 };

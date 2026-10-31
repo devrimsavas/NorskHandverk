@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { PATHS } from "@/lib/constants";
 import { Brand, Category, Product } from "@/lib/types";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, productImageUrl } from "@/lib/format";
 
 interface ProductFormProps {
   // Missing when creating a new product
@@ -23,6 +24,8 @@ interface FormState {
   brandId: string;
 }
 
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // Same limit as the backend
+
 const ProductForm = ({ product }: ProductFormProps) => {
   const router = useRouter();
   const isEdit = product !== undefined;
@@ -38,6 +41,10 @@ const ProductForm = ({ product }: ProductFormProps) => {
     categoryId: product ? String(product.categoryId) : "",
     brandId: product ? String(product.brandId) : "",
   });
+
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,8 +64,29 @@ const ProductForm = ({ product }: ProductFormProps) => {
     loadOptions();
   }, []);
 
+  // Free the temporary preview url when the file changes or the form closes
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
   const updateField = (field: keyof FormState, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    setError(null);
+
+    if (file && file.size > MAX_IMAGE_SIZE) {
+      setError("The image must be 5 MB or smaller.");
+      e.target.value = "";
+      return;
+    }
+
+    setImageFile(file);
+    setPreviewUrl(file ? URL.createObjectURL(file) : null);
   };
 
   // Same formula as the backend: discount off the net price, then VAT
@@ -70,6 +98,9 @@ const ProductForm = ({ product }: ProductFormProps) => {
       ? (Number(form.price) - Number(form.discount || 0)) *
         (1 + selectedCategory.defaultVatRate)
       : null;
+
+  const currentImageUrl =
+    previewUrl ?? (product ? productImageUrl(product.productImage) : null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,6 +118,7 @@ const ProductForm = ({ product }: ProductFormProps) => {
     };
 
     try {
+      // 1. Save the product details
       const response = await apiFetch(
         isEdit ? PATHS.product(product.id) : PATHS.products,
         {
@@ -104,6 +136,27 @@ const ProductForm = ({ product }: ProductFormProps) => {
           : null;
         setError(validation || data?.message || "Could not save the product.");
         return;
+      }
+
+      const saved: Product = await response.json();
+
+      // 2. Upload the image, if one was chosen
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append("file", imageFile);
+
+        const imageResponse = await apiFetch(PATHS.productImage(saved.id), {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!imageResponse.ok) {
+          const data = await imageResponse.json().catch(() => null);
+          setError(
+            `The product was saved, but the image was not: ${data?.message ?? "upload failed."}`,
+          );
+          return;
+        }
       }
 
       router.push("/admin/products");
@@ -126,6 +179,40 @@ const ProductForm = ({ product }: ProductFormProps) => {
       <h2 className="text-xl font-semibold text-ink">
         {isEdit ? "Edit product" : "New product"}
       </h2>
+
+      <div>
+        <span className={labelClass}>Image</span>
+        <div className="flex items-center gap-4">
+          <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-surface-muted shrink-0 flex items-center justify-center">
+            {currentImageUrl ? (
+              <Image
+                src={currentImageUrl}
+                alt="Product image"
+                fill
+                sizes="96px"
+                className="object-cover"
+                unoptimized={!!previewUrl}
+              />
+            ) : (
+              <span className="text-xs text-muted text-center px-2">
+                No image
+              </span>
+            )}
+          </div>
+          <div className="space-y-1">
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleImageChange}
+              className="text-sm text-muted file:mr-3 file:rounded-md file:border-0 file:bg-surface-muted file:px-3 file:py-1.5 file:text-ink hover:file:bg-line"
+            />
+            <p className="text-xs text-muted">
+              JPG, PNG or WebP, up to 5 MB. Leave empty to show &quot;Image
+              coming soon&quot;.
+            </p>
+          </div>
+        </div>
+      </div>
 
       <div>
         <label htmlFor="title" className={labelClass}>
