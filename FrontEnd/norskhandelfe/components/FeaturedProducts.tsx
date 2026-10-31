@@ -16,7 +16,16 @@ const FeaturedProducts = () => {
         if (response.ok) {
           const data: Product[] = await response.json();
           // Show the first four products that are in stock
-          setProducts(data.filter((p) => p.status === "Available" && p.quantity > 0).slice(0, 4));
+          setProducts(
+            data
+              .filter((p) => p.status === "Available" && p.quantity > 0)
+              .sort(
+                (a, b) =>
+                  new Date(b.dateAdded).getTime() -
+                  new Date(a.dateAdded).getTime(),
+              )
+              .slice(0, 4),
+          );
         }
       } catch {
         // The home page still works without featured products

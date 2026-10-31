@@ -66,10 +66,10 @@ export default function Home() {
       {/* Featured products */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-20">
         <div className="flex items-end justify-between mb-8">
-          <h2 className="text-2xl font-semibold text-ink">Featured pieces</h2>
+          <h2 className="text-2xl font-semibold text-ink">New arrivals</h2>
           <Link
             href="/products"
-            className="text-sm font-medium text-accent hover:underline"
+            className="rounded-lg border border-line px-4 py-2 text-sm font-medium text-ink hover:bg-surface-muted transition"
           >
             View all
           </Link>
