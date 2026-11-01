@@ -36,7 +36,7 @@ const MainNav = () => {
           {navLink("/brandspage", "Brands")}
           {navLink("/categorypage", "Categories")}
           {navLink("/cartpage", "Carts")}
-          {navLink("/orderspage", "Orders")}
+          
         </>
       )}
 

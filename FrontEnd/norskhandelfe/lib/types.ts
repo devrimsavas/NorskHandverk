@@ -64,6 +64,8 @@ export interface Order {
   orderNumber: string;
   statusName: string;
   customerId: number;
+  customerName: string;
+  customerEmail: string;
   orderDate: string;
   items: OrderItem[];
   totalPrice: number;

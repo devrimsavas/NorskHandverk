@@ -228,6 +228,48 @@ namespace NorskHandverk.Controllers.OrderController
         }
 
 
+        // Admins can only move an order one step forward: Ordered -> InProgress -> Delivered
+        private static readonly Dictionary<OrderStatusType, OrderStatusType> NextOrderStatus = new()
+{
+    { OrderStatusType.Ordered, OrderStatusType.InProgress },
+    { OrderStatusType.InProgress, OrderStatusType.Delivered },
+};
+
+        //UPDATE ORDER STATUS (admin)
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("{id}/status")]
+        public async Task<ActionResult<ReadOrderDTO>> UpdateOrderStatus(int id, UpdateOrderStatusDTO updateOrderStatusDTO)
+        {
+            if (!Enum.TryParse<OrderStatusType>(updateOrderStatusDTO.Status, ignoreCase: true, out var newStatus))
+            {
+                return BadRequest(new { Message = $"Unknown status '{updateOrderStatusDTO.Status}'." });
+            }
+
+            var order = await _dbContext.Orders.FirstOrDefaultAsync(o => o.Id == id);
+            if (order == null)
+            {
+                return NotFound(new { Message = "Order not found." });
+            }
+
+            var currentStatus = (OrderStatusType)order.OrderStatusId;
+            if (!NextOrderStatus.TryGetValue(currentStatus, out var allowedNext) || allowedNext != newStatus)
+            {
+                return BadRequest(new { Message = $"An order cannot move from {currentStatus} to {newStatus}." });
+            }
+
+            order.OrderStatusId = (int)newStatus;
+            await _dbContext.SaveChangesAsync();
+
+            // Reload with the new status name for the response
+            var updated = await _dbContext.Orders
+                .Include(o => o.OrderStatus)
+                .Include(o => o.Items)
+                .FirstAsync(o => o.Id == id);
+
+            return Ok(_mapper.Map<ReadOrderDTO>(updated));
+        }
+
+
         //CANCEL ORDER 
         [Authorize]
         [HttpPost("cancel/{orderId}")]
