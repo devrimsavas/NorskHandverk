@@ -1,49 +1,57 @@
-// app/payment/page.tsx
-'use client'
-import React, { Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements } from '@stripe/react-stripe-js';
-import CheckoutForm from '@/components/CheckOutForm';
-//this is a test 
+"use client";
 
-// Initialize Stripe with your Public Key
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+import React, { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+import CheckoutForm from "@/components/CheckOutForm";
+
+// Created once, outside the component, so Stripe.js is not reloaded on every render
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
+);
 
 const PaymentContent = () => {
-    const searchParams = useSearchParams();
-    const clientSecret = searchParams.get('secret');
+  const searchParams = useSearchParams();
+  const clientSecret = searchParams.get("secret");
 
-    if (!clientSecret) {
-        return <div className="p-10 text-red-500 font-bold">Error: No payment secret found!</div>;
-    }
-
-    const options = {
-        clientSecret,
-        // Optional: customize the appearance of the form
-        appearance: { theme: 'stripe' as const },
-    };
-
+  if (!clientSecret) {
     return (
-        <section className="min-h-screen bg-gray-50 py-20">
-            <div className="max-w-md mx-auto bg-white p-8 rounded-xl shadow-lg border border-gray-100">
-                <h2 className="text-2xl font-bold mb-6 text-gray-800 text-center">Complete Payment</h2>
-                {/* Wrap the form in the Elements provider */}
-                <Elements stripe={stripePromise} options={options}>
-                    <CheckoutForm clientSecret={clientSecret} />
-                </Elements>
-            </div>
-        </section>
+      <p className="max-w-md mx-auto py-20 text-center text-danger">
+        No payment was found. Please start the checkout from your cart.
+      </p>
     );
+  }
+
+  return (
+    <section className="min-h-screen bg-page py-16 px-4">
+      <div className="max-w-md mx-auto bg-surface rounded-2xl border border-line p-8">
+        <h1 className="text-2xl font-semibold text-ink mb-1 text-center">
+          Complete payment
+        </h1>
+        <p className="text-sm text-muted text-center mb-6">
+          Test mode: use card 4242 4242 4242 4242
+        </p>
+        <Elements
+          stripe={stripePromise}
+          options={{ clientSecret, appearance: { theme: "stripe" } }}
+        >
+          <CheckoutForm clientSecret={clientSecret} />
+        </Elements>
+      </div>
+    </section>
+  );
 };
 
-const PaymentPage = () => {
-    return (
-        // Suspense is required when using useSearchParams in Next.js 13+ app dir
-        <Suspense fallback={<div>Loading payment environment...</div>}>
-            <PaymentContent />
-        </Suspense>
-    );
-};
-
-export default PaymentPage;
+export default function PaymentPage() {
+  return (
+    // useSearchParams needs a Suspense boundary in the App Router
+    <Suspense
+      fallback={
+        <p className="py-20 text-center text-muted">Loading payment...</p>
+      }
+    >
+      <PaymentContent />
+    </Suspense>
+  );
+}

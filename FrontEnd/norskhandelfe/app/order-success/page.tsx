@@ -1,59 +1,106 @@
-// app/order-success/page.tsx
-'use client'
-import React, { Suspense } from 'react';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+"use client";
 
-const SuccessContent = () => {
-    const searchParams = useSearchParams();
-    // Stripe automatically appends payment_intent_client_secret to the URL
-    const paymentIntent = searchParams.get('payment_intent');
+import React, { Suspense } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
-    return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-            <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center border border-green-100">
-                <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                </div>
-                
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Payment Successful!</h1>
-                <p className="text-gray-600 mb-8">
-                    Your order has been confirmed. Thank you for your purchase.
-                </p>
+// Stripe adds redirect_status to the return url: succeeded, processing or failed
+const results = {
+  succeeded: {
+    title: "Payment successful",
+    text: "Thank you for your order. You can follow it in your account.",
+    iconClass:
+      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
+    icon: "M5 13l4 4L19 7",
+  },
+  processing: {
+    title: "Payment processing",
+    text: "Your payment is being processed. Your order will update as soon as it is confirmed.",
+    iconClass:
+      "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
+    icon: "M12 8v4l3 3",
+  },
+  failed: {
+    title: "Payment failed",
+    text: "Your payment was not completed. You can try again from your orders.",
+    iconClass: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
+    icon: "M6 18L18 6M6 6l12 12",
+  },
+};
 
-                <div className="bg-gray-50 rounded-lg p-4 mb-8 text-left">
-                    <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Payment Reference</p>
-                    <p className="text-sm font-mono text-gray-700 break-all">{paymentIntent}</p>
-                </div>
+const ResultContent = () => {
+  const searchParams = useSearchParams();
+  const status = searchParams.get("redirect_status");
+  const paymentIntent = searchParams.get("payment_intent");
 
-                <div className="space-y-3">
-                    <Link 
-                        href="/account/orders" 
-                        className="block w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition"
-                    >
-                        View My Orders
-                    </Link>
-                    <Link 
-                        href="/" 
-                        className="block w-full text-gray-500 py-2 text-sm hover:text-gray-800 transition"
-                    >
-                        Return to Home
-                    </Link>
-                </div>
-            </div>
+  const result =
+    status === "succeeded"
+      ? results.succeeded
+      : status === "processing"
+        ? results.processing
+        : results.failed;
+
+  return (
+    <section className="min-h-screen bg-page flex items-center justify-center p-6">
+      <div className="max-w-md w-full bg-surface rounded-2xl border border-line p-8 text-center">
+        <div
+          className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 ${result.iconClass}`}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-8 w-8"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d={result.icon}
+            />
+          </svg>
         </div>
-    );
+
+        <h1 className="text-2xl font-semibold text-ink mb-2">{result.title}</h1>
+        <p className="text-muted mb-8">{result.text}</p>
+
+        {paymentIntent && (
+          <div className="bg-surface-muted rounded-lg p-4 mb-8 text-left">
+            <p className="text-xs uppercase font-medium text-muted mb-1">
+              Payment reference
+            </p>
+            <p className="text-sm font-mono text-ink break-all">
+              {paymentIntent}
+            </p>
+          </div>
+        )}
+
+        <div className="space-y-3">
+          <Link
+            href="/account/orders"
+            className="block w-full rounded-lg bg-accent py-3 font-medium text-accent-contrast hover:bg-accent-strong transition"
+          >
+            View my orders
+          </Link>
+          <Link
+            href="/products"
+            className="block w-full py-2 text-sm text-muted hover:text-ink transition"
+          >
+            Continue shopping
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
 };
 
-const OrderSuccessPage = () => {
-    return (
-        // Suspense is mandatory for useSearchParams in Next.js
-        <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading status...</div>}>
-            <SuccessContent />
-        </Suspense>
-    );
-};
-
-export default OrderSuccessPage;
+export default function OrderSuccessPage() {
+  return (
+    <Suspense
+      fallback={<p className="py-20 text-center text-muted">Loading...</p>}
+    >
+      <ResultContent />
+    </Suspense>
+  );
+}
