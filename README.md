@@ -18,7 +18,7 @@ Most demo shops stop at the cart. The goal of NorskHandverk is the part that usu
 
 ## Roadmap
 
-_Last updated: 2026-10-31_
+_Last updated: 2026-11-02_
 
 - [x] PostgreSQL database with Entity Framework Core migrations
 - [x] Data models: products, brands, categories, customers, carts, orders, transactions
@@ -36,11 +36,16 @@ _Last updated: 2026-10-31_
 - [x] Customer id taken from the token on every customer endpoint, never from the URL or request body
 - [x] Ownership checks: customers only reach their own orders, other orders return `404`
 - [x] First admin user created on startup from configuration
-- [x] Next.js storefront: home page, shop, product details, registration and login
+- [x] Admin accounts protected from deletion, so the shop can never lose its last admin
+- [x] Discounts applied consistently: shop, cart and checkout use the same price
+- [x] Next.js storefront: home page, shop with search and category filter, product details, registration and login
 - [x] Customer account: profile, cart and order history with cancellation
+- [x] Payment page that handles a failed payment form, and a result page based on Stripe's redirect status
 - [x] Light and dark theme based on design tokens
-- [ ] Admin panel for products, orders, customers, brands and categories
-- [ ] Order status updates by admins (ordered, in progress, delivered)
+- [x] Admin panel for products, orders, customers, brands, categories and carts
+- [x] Product image upload with type and size validation, behind a storage interface
+- [x] Order status workflow for admins (ordered, in progress, delivered)
+- [x] Norwegian VAT rates per category, validated on the server
 - [ ] Background job that releases stock from abandoned carts
 - [ ] Automated tests
 - [ ] Continuous integration with GitHub Actions
@@ -69,13 +74,14 @@ NorskHandverk/
 │   ├── Mappings/                # AutoMapper profiles
 │   ├── Migrations/              # EF Core migrations
 │   ├── Models/                  # Entities, status enums, JwtSettings
-│   └── Services/                # AuthService, OrderService, StripeService
+│   ├── Services/                # AuthService, OrderService, StripeService, LocalImageStorage
+│   └── wwwroot/images/products/ # Product images, served as static files
 └── FrontEnd/
     └── norskhandelfe/           # Next.js app
-        ├── app/                 # Pages (shop, products, account, login, register, payment)
-        ├── components/          # Header, footer, product card, theme toggle
+        ├── app/                 # Pages: shop, products, account, admin, login, register, payment
+        ├── components/          # Header, footer, product card, product image, theme toggle, admin forms
         ├── context/             # AuthContext
-        └── lib/                 # apiFetch, auth storage, types, formatting, API paths
+        └── lib/                 # apiFetch, auth storage, types, formatting, API paths, order statuses
 ```
 
 ## Getting Started
@@ -137,7 +143,9 @@ dotnet ef database update
 dotnet run --launch-profile https
 ```
 
-The API runs on `https://localhost:7140`. On the first start, an admin user is created from the `AdminUser` section if no admin exists yet.
+The API runs on `https://localhost:7140`. On the first start, an admin user is created from the `AdminUser` section if no admin exists yet. Log in with it on the website to reach the admin panel at `/admin`.
+
+Product images are stored in `NorskHandverk/wwwroot/images/products/` and served from `https://localhost:7140/images/products/`.
 
 ### Stripe webhooks
 
@@ -173,14 +181,17 @@ The frontend is a Next.js app with the App Router, styled with Tailwind CSS 4 an
 
 ### Features
 
-- **Visitors:** home page with featured products, shop, product details, registration with automatic login
+- **Visitors:** home page with the newest products, shop with search and category filter, product details, registration with automatic login
 - **Customers:** add to cart, change quantities, Stripe checkout, profile editing, order history, resume an unfinished payment, cancel an order with refund
+- **Admins:** manage products with image upload and a live price preview, move orders through their status workflow, cancel and refund orders, view customers and carts, manage brands and categories
 
 ### Architecture
 
-- **`apiFetch`** wraps `fetch`, adds the API base URL and the JWT token to every request
+- **`apiFetch`** wraps `fetch`, adds the API base URL and the JWT token to every request, and leaves the `Content-Type` to the browser for file uploads
 - **`AuthContext`** keeps the logged-in user in React state and in `localStorage`, and exposes `login` and `logout`. Expired tokens are removed when they are read
-- **Account layout** (`app/account/layout.tsx`) redirects visitors to the login page. Real authorization is enforced by the API
+- **Route layouts:** `app/account/layout.tsx` sends visitors to the login page, `app/admin/layout.tsx` also sends customers back to the shop. Real authorization is enforced by the API
+- **`ProductImage`** shows a product image or an "Image coming soon" placeholder, used by the shop, cart and admin pages
+- **Client-side search and filter:** the catalog is small, so the shop filters products in the browser. A large catalog would move this to query parameters on the API
 - **Server and client components:** static pages such as the home page are server components, only the parts that fetch data in the browser are client components
 - **Design tokens:** colors are named by purpose (`page`, `surface`, `ink`, `muted`, `accent`) and defined once for each theme in `globals.css`, so the whole interface switches theme without `dark:` classes on every element
 - **No theme flash:** a small inline script applies the saved theme before the first paint
@@ -212,6 +223,41 @@ Cart (active) ──checkout──▶ Order (awaiting payment) ──webhook: pa
 | Ordered                          | Payment refunded           | Refunded    | Returned |
 | In progress, delivered, canceled | Not allowed, returns `400` | -           | -        |
 
+6. **The result page only informs the customer.** After payment, Stripe redirects to `/order-success` with a `redirect_status` (`succeeded`, `processing` or `failed`), and the page shows the matching message. Whether an order counts as paid is decided by the verified webhook alone, so editing the URL cannot mark an order as paid.
+
+## Order Status Workflow
+
+After payment, admins move orders forward one step at a time. The allowed transitions live in a single dictionary in `OrderController`, so the rules are in one place:
+
+```
+Ordered ──▶ In Progress ──▶ Delivered
+```
+
+| Request                                    | Result                                                                                      |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| Ordered → In Progress                      | Allowed                                                                                     |
+| In Progress → Delivered                    | Allowed                                                                                     |
+| Skipping a step (Ordered → Delivered)      | `400 Bad Request`                                                                           |
+| Going back (Delivered → Ordered)           | `400 Bad Request`                                                                           |
+| Changing an order that is awaiting payment | `400 Bad Request`, it has not been paid yet                                                 |
+| Setting Canceled                           | `400 Bad Request`, cancellation goes through the cancel endpoint so the payment is refunded |
+
+Once an order is in progress, customers can no longer cancel it.
+
+## Pricing and VAT
+
+- **Discounts are taken off the net price, and VAT is calculated on the discounted price:** `(price − discount) × (1 + VAT rate)`. The same formula is used for the shop price, the cart line, the checkout total and the price preview in the admin product form, so the customer always pays the price shown in the shop.
+- **VAT comes from the product's category.** The admin picks one of the Norwegian rates (25% general, 15% food, 12% transport and culture, 0% exempt), and the API rejects any rate outside 0–1, so a mistyped `25` cannot become 2500% VAT.
+- **Cart and order lines copy the price and VAT rate** when they are created, so changing a category's VAT later only affects new carts.
+
+## Product Images
+
+- `POST /api/Product/{id}/image` accepts a JPG, PNG or WebP file up to 5 MB as `multipart/form-data`.
+- **Uploaded file names are never used.** Each image is saved under a random name, which prevents overwriting another product's image and path traversal attempts such as `../appsettings.json`.
+- **The new image is saved before the old one is deleted**, so a failed upload never leaves a product without its image.
+- **Storage sits behind `IImageStorage`.** `LocalImageStorage` writes to `wwwroot`. Moving to cloud storage such as Backblaze B2 or S3 only needs a new implementation, the controller stays the same.
+- Products without an image show an "Image coming soon" placeholder instead of a broken image.
+
 ## Authentication and Authorization
 
 - `POST /api/Auth/login` checks the password with ASP.NET Core's `PasswordHasher` and returns a signed JWT with the customer id, name and role. A wrong email and a wrong password return the same `401`, so the endpoint does not reveal which emails are registered.
@@ -219,6 +265,7 @@ Cart (active) ──checkout──▶ Order (awaiting payment) ──webhook: pa
 - **Ownership checks return `404`, not `403`:** a customer asking for another customer's order gets "not found", which does not reveal that the order exists. Admins can see every order.
 - **Registration cannot create an admin:** the registration and profile DTOs have no role field.
 - **The first admin** is created on startup by `AdminSeeder` from configuration. It never turns an existing customer into an admin.
+- **Admin accounts cannot be deleted.** A deleted admin could no longer log in, and the seeder would not create a new one, which would leave the shop without an admin.
 - **Secrets** (database, Stripe, JWT key, admin password) live in `appsettings.json`, which is not committed. `AppSetting_Example.txt` shows the expected structure.
 
 ## API Documentation
@@ -245,21 +292,22 @@ Authenticated endpoints require an `Authorization: Bearer <token>` header.
 | GET    | `/api/Customer`           | Admin         | List all customers                                                               |
 | GET    | `/api/Customer/{id}`      | Admin         | Customer details                                                                 |
 | PUT    | `/api/Customer/{id}`      | Admin         | Update a customer                                                                |
-| DELETE | `/api/Customer/{id}`      | Admin         | Soft delete a customer without orders                                            |
+| DELETE | `/api/Customer/{id}`      | Admin         | Soft delete a customer without orders (admin accounts cannot be deleted)         |
 | GET    | `/api/Product`            | Public        | List products (soft-deleted products are hidden)                                 |
 | GET    | `/api/Product/{id}`       | Public        | Product details                                                                  |
 | POST   | `/api/Product`            | Admin         | Create a product                                                                 |
 | PUT    | `/api/Product/{id}`       | Admin         | Update a product                                                                 |
 | DELETE | `/api/Product/{id}`       | Admin         | Soft delete a product                                                            |
+| POST   | `/api/Product/{id}/image` | Admin         | Upload or replace the product image (JPG, PNG or WebP, up to 5 MB)               |
 | GET    | `/api/Brand`              | Public        | List brands                                                                      |
 | GET    | `/api/Brand/{id}`         | Public        | Brand details                                                                    |
 | POST   | `/api/Brand`              | Admin         | Create a brand                                                                   |
-| PUT    | `/api/Brand/{id}`         | Admin         | Update a brand                                                                   |
-| DELETE | `/api/Brand/{id}`         | Admin         | Delete a brand                                                                   |
+| PUT    | `/api/Brand/{id}`         | Admin         | Rename a brand (names must be unique)                                            |
+| DELETE | `/api/Brand/{id}`         | Admin         | Delete a brand without products                                                  |
 | GET    | `/api/Category`           | Public        | List categories                                                                  |
 | POST   | `/api/Category`           | Admin         | Create a category                                                                |
-| PUT    | `/api/Category/{id}`      | Admin         | Update a category                                                                |
-| DELETE | `/api/Category/{id}`      | Admin         | Soft delete a category                                                           |
+| PUT    | `/api/Category/{id}`      | Admin         | Update a category (unique name, VAT rate between 0 and 1)                        |
+| DELETE | `/api/Category/{id}`      | Admin         | Soft delete a category without products                                          |
 | GET    | `/api/Cart/me`            | Authenticated | Active cart of the logged-in customer                                            |
 | POST   | `/api/Cart`               | Authenticated | Add a product to the cart (reserves stock)                                       |
 | POST   | `/api/Cart/updatecart`    | Authenticated | Set the quantity of a cart item (`0` removes it)                                 |
@@ -273,7 +321,8 @@ Authenticated endpoints require an `Authorization: Bearer <token>` header.
 | GET    | `/api/Order/me`           | Authenticated | Orders of the logged-in customer, newest first                                   |
 | GET    | `/api/Order/{id}`         | Owner, Admin  | Order details                                                                    |
 | POST   | `/api/Order/cancel/{id}`  | Owner, Admin  | Cancel an order (cancels or refunds the Stripe payment)                          |
-| GET    | `/api/Order`              | Admin         | List all orders                                                                  |
+| GET    | `/api/Order`              | Admin         | List all orders with customer name and email                                     |
+| PATCH  | `/api/Order/{id}/status`  | Admin         | Move an order one step forward (`InProgress`, `Delivered`)                       |
 | POST   | `/api/Order/webhook`      | Stripe        | Stripe webhook, verified with the signing secret                                 |
 
 ## Status Values
