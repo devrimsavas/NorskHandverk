@@ -170,6 +170,12 @@ namespace NorskHandverk.Controllers.CustomerController
             {
                 return NotFound(new { Message = "Customer does not exist" });
             }
+
+            // Admin accounts cannot be deleted, so the shop can never lose its last admin
+            if (existedCustomer.Role == Role.Admin)
+            {
+                return BadRequest(new { Message = "Admin accounts cannot be deleted." });
+            }
             //check if customer has cart, order with product
             if (existedCustomer.Orders.Count!=0)
             {

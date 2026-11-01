@@ -95,7 +95,7 @@ export default function ProductsPage() {
 
         {isLoading && <p className="text-muted">Loading products...</p>}
 
-        {error && <p className="text-red-600">{error}</p>}
+        {error && <p className="text-danger">{error}</p>}
 
         {!isLoading && !error && products.length === 0 && (
           <p className="text-muted">No products yet.</p>

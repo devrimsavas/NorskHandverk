@@ -18,6 +18,7 @@
   /* Kept for the old pages until they are removed */
   --background: #ffffff;
   --foreground: #171717;
+  --danger: #b91c1c;
 }
 
 /* Dark theme: polar night with a warm tone */
@@ -31,6 +32,7 @@
   --accent: #7fb3a2;
   --accent-strong: #9cc7b8;
   --accent-contrast: #15130f;
+  --danger: #f87171;
 }
 
 @theme inline {
@@ -56,6 +58,7 @@
   --color-accent-2: #d97706;
   --color-secondary: #64748b;
   --color-secondary-dark: #475569;
+  --color-danger: var(--danger);
 }
 
 body {

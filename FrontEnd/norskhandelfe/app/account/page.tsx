@@ -99,7 +99,7 @@ export default function ProfilePage() {
   };
 
   if (!form || !customer) {
-    return message ? <p className="text-red-600">{message.text}</p> : <p className="text-muted">Loading...</p>;
+    return message ? <p className="text-danger">{message.text}</p> : <p className="text-muted">Loading...</p>;
   }
 
   const inputClass =
@@ -152,7 +152,7 @@ export default function ProfilePage() {
         </div>
 
         {message && (
-          <p className={`text-sm ${message.isError ? "text-red-600" : "text-accent"}`}>{message.text}</p>
+          <p className={`text-sm ${message.isError ? "text-danger" : "text-accent"}`}>{message.text}</p>
         )}
 
         <button

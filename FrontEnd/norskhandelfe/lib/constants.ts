@@ -49,4 +49,6 @@ export const PATHS = {
   productImage: (id: number) => `/Product/${id}/image`,
   orders: "/Order",
   orderStatus: (id: number) => `/Order/${id}/status`,
+  customers: "/Customer",
+  customer: (id: number) => `/Customer/${id}`,
 };

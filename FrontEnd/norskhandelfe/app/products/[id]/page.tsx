@@ -181,7 +181,7 @@ export default function ProductDetailPage() {
 
             {message && (
               <p
-                className={`text-sm ${message.isError ? "text-red-600" : "text-accent"}`}
+                className={`text-sm ${message.isError ? "text-danger" : "text-accent"}`}
               >
                 {message.text}
               </p>

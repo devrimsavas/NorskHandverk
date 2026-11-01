@@ -128,7 +128,7 @@ export default function AdminOrdersPage() {
 
       {message && (
         <p
-          className={`text-sm ${message.isError ? "text-red-600" : "text-accent"}`}
+          className={`text-sm ${message.isError ? "text-danger" : "text-accent"}`}
         >
           {message.text}
         </p>
@@ -196,7 +196,7 @@ export default function AdminOrdersPage() {
                     <button
                       onClick={() => cancelOrder(order)}
                       disabled={isBusy}
-                      className="rounded-lg border border-line px-4 py-2 text-sm text-muted hover:border-red-300 hover:text-red-600 disabled:opacity-50"
+                      className="rounded-lg border border-line px-4 py-2 text-sm text-muted hover:border-danger hover:text-danger disabled:opacity-50"
                     >
                       Cancel
                     </button>

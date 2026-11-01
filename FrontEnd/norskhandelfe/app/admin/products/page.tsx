@@ -71,7 +71,7 @@ export default function AdminProductsPage() {
 
       {message && (
         <p
-          className={`text-sm ${message.isError ? "text-red-600" : "text-accent"}`}
+          className={`text-sm ${message.isError ? "text-danger" : "text-accent"}`}
         >
           {message.text}
         </p>
@@ -120,7 +120,7 @@ export default function AdminProductsPage() {
                     {formatPrice(product.priceIncVat)}
                   </td>
                   <td
-                    className={`px-4 py-3 text-right ${product.quantity === 0 ? "text-red-600" : ""}`}
+                    className={`px-4 py-3 text-right ${product.quantity === 0 ? "text-danger" : ""}`}
                   >
                     {product.quantity}
                   </td>
@@ -133,7 +133,7 @@ export default function AdminProductsPage() {
                     </Link>
                     <button
                       onClick={() => deleteProduct(product)}
-                      className="ml-4 text-muted hover:text-red-600"
+                      className="ml-4 text-muted hover:text-danger"
                     >
                       Delete
                     </button>

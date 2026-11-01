@@ -155,7 +155,7 @@ export default function CartPage() {
             <button
               onClick={() => changeQuantity(item.productId, 0)}
               disabled={isBusy}
-              className="text-sm text-muted hover:text-red-600 disabled:opacity-50"
+              className="text-sm text-muted hover:text-danger disabled:opacity-50"
             >
               Remove
             </button>
@@ -167,7 +167,7 @@ export default function CartPage() {
         <button
           onClick={clearCart}
           disabled={isBusy}
-          className="text-sm text-muted hover:text-red-600 disabled:opacity-50"
+          className="text-sm text-muted hover:text-danger disabled:opacity-50"
         >
           Clear cart
         </button>
@@ -186,7 +186,7 @@ export default function CartPage() {
         </div>
       </div>
 
-      {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-4 text-sm text-danger">{error}</p>}
     </div>
   );
 }

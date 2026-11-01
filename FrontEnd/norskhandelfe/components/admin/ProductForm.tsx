@@ -344,7 +344,7 @@ const ProductForm = ({ product }: ProductFormProps) => {
         </p>
       )}
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
 
       <div className="flex items-center gap-4">
         <button

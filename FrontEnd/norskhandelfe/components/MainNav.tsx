@@ -31,8 +31,7 @@ const MainNav = () => {
       {/* Old admin pages: visible to admins only until they move under /admin */}
       {isAdmin && (
         <>
-          {navLink("/admin", "Admin")}
-          {navLink("/customerpage", "Customers")}
+          {navLink("/admin", "Admin")}          
           {navLink("/brandspage", "Brands")}
           {navLink("/categorypage", "Categories")}
           {navLink("/cartpage", "Carts")}
