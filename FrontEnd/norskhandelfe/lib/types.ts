@@ -85,4 +85,5 @@ export interface Category {
   description: string;
   defaultVatRate: number;
   isDeleted: boolean;
+  ucpCategoryCode: string | null;
 }

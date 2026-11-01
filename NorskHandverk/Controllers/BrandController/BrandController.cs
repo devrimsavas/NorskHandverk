@@ -72,6 +72,17 @@ namespace NorskHandverk.Controllers.BrandController
             {
                 return NotFound(new { Message = "Brand does not exit" });
             }
+            // Renaming must not create a duplicate brand name
+            if (!string.IsNullOrWhiteSpace(brandUpdateDTO.Name))
+            {
+                var nameTaken = await _dbContext.Brands.AnyAsync(b =>
+                    b.Id != id && b.Name.ToLower().Trim() == brandUpdateDTO.Name.ToLower().Trim());
+
+                if (nameTaken)
+                {
+                    return Conflict(new { Message = $"Database has already a brand named {brandUpdateDTO.Name.Trim()}" });
+                }
+            }
             existedBrand.Name = brandUpdateDTO.Name ?? existedBrand.Name;
             await _dbContext.SaveChangesAsync();
             var readDTO=_mapper.Map<BrandReadDTO>(existedBrand);

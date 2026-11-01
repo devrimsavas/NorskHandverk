@@ -62,6 +62,18 @@ namespace NorskHandverk.Controllers.CategoryController
             {
                 return NotFound(new { Message = "Category does not exist" });
             }
+
+            // Renaming must not create a duplicate category name
+            if (!string.IsNullOrWhiteSpace(updateCategoryDTO.Name))
+            {
+                var nameTaken = await _dbContext.Categories.AnyAsync(c =>
+                    c.Id != categoryId && c.Name.ToLower().Trim() == updateCategoryDTO.Name.ToLower().Trim());
+
+                if (nameTaken)
+                {
+                    return Conflict(new { Message = $"The Category with name {updateCategoryDTO.Name.Trim()} already exists" });
+                }
+            }
             existedCategory.Name = updateCategoryDTO.Name ?? existedCategory.Name;
             existedCategory.Description = updateCategoryDTO.Description ?? existedCategory.Description;
             existedCategory.DefaultVatRate = updateCategoryDTO.DefaultVatRate ?? existedCategory.DefaultVatRate;

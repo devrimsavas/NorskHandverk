@@ -32,8 +32,6 @@ const MainNav = () => {
       {isAdmin && (
         <>
           {navLink("/admin", "Admin")}          
-          {navLink("/brandspage", "Brands")}
-          {navLink("/categorypage", "Categories")}
           {navLink("/cartpage", "Carts")}
           
         </>
