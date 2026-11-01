@@ -27,16 +27,7 @@ const MainNav = () => {
   return (
     <nav className="flex items-center gap-6">
       {navLink("/products", "Shop")}
-
-      {/* Old admin pages: visible to admins only until they move under /admin */}
-      {isAdmin && (
-        <>
-          {navLink("/admin", "Admin")}          
-          
-          
-        </>
-      )}
-
+      {isAdmin && navLink("/admin", "Admin")}
       {navLink("/aboutus", "About App")}
     </nav>
   );

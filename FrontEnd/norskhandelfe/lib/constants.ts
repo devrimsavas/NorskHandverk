@@ -1,57 +1,39 @@
-//BASE
 export const BASE_API_URL = process.env.NEXT_PUBLIC_BASE_API_URL;
 
 // Backend root (without /api), where uploaded files are served
 export const BACKEND_URL = (BASE_API_URL ?? "").replace(/\/api\/?$/, "");
 
-//products
-export const API_GET_ALL_PRODUCTS = `${BASE_API_URL}/product`;
-//customers
-export const API_GET_ALL_CUSTOMERS = `${BASE_API_URL}/customer`;
-
-//categories
-export const API_GET_ALL_CATEGORIES = `${BASE_API_URL}/Category`;
-
-//BRANDS
-//get brands
-export const API_GET_ALL_BRANDS = `${BASE_API_URL}/brand`;
-//post a brand
-export const API_CREATE_BRAND = `${BASE_API_URL}/brand`;
-
-//CARTS
-export const API_GET_ALL_CARTS = `${BASE_API_URL}/cart`;
-
-//ORDERS
-
-//get all orders
-export const API_GET_ALL_ORDERS = `${BASE_API_URL}/order`;
-
-//checkout
-export const API_CHECK_OUT_ORDER = (customerId: number) =>
-  `${BASE_API_URL}/order/checkout/${customerId}`;
-
-// PATHS FOR apiFetch (the base url is added by apiFetch)
+// API paths for apiFetch (the base url is added by apiFetch)
 export const PATHS = {
+  // Auth and profile
   login: "/Auth/login",
   register: "/Customer",
+  myProfile: "/Customer/me",
+
+  // Catalog
   products: "/Product",
   product: (id: number | string) => `/Product/${id}`,
+  productImage: (id: number) => `/Product/${id}/image`,
+  brands: "/Brand",
+  brand: (id: number) => `/Brand/${id}`,
+  categories: "/Category",
+  category: (id: number) => `/Category/${id}`,
+
+  // Cart
   cart: "/Cart",
-  myProfile: "/Customer/me",
+  carts: "/Cart",
   myCart: "/Cart/me",
   updateCart: "/Cart/updatecart",
   clearCart: "/Cart/clearcart",
+
+  // Orders
   checkout: "/Order/checkout",
+  orders: "/Order",
   myOrders: "/Order/me",
   cancelOrder: (id: number) => `/Order/cancel/${id}`,
-  brands: "/Brand",
-  categories: "/Category",
-  productImage: (id: number) => `/Product/${id}/image`,
-  orders: "/Order",
   orderStatus: (id: number) => `/Order/${id}/status`,
+
+  // Customers (admin)
   customers: "/Customer",
   customer: (id: number) => `/Customer/${id}`,
-  brand: (id: number) => `/Brand/${id}`,
-  category: (id: number) => `/Category/${id}`,
-  carts: "/Cart",
 };
