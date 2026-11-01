@@ -19,6 +19,13 @@ namespace NorskHandverk.Mappings
             CreateMap<CartItem, ReadCartItemDTO>()
                 .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.ProductName))
                 .ForMember(dest => dest.ProductImage, opt => opt.MapFrom(src => src.Product != null ? src.Product.ProductImage : string.Empty));
+            CreateMap<Cart, ReadCartDTO>()
+                .ForMember(dest => dest.StatusName,
+                    opt => opt.MapFrom(src => src.CartStatus.Name))
+                .ForMember(dest => dest.CustomerName,
+                    opt => opt.MapFrom(src => src.Customer != null ? src.Customer.Name + " " + src.Customer.Surname : string.Empty))
+                .ForMember(dest => dest.CustomerEmail,
+                    opt => opt.MapFrom(src => src.Customer != null ? src.Customer.Email : string.Empty));
 
         }
       

@@ -46,6 +46,9 @@ export interface Cart {
   id: number;
   cartNumber: string;
   customerId: number;
+  customerName: string;
+  customerEmail: string;
+
   statusName: string;
   items: CartItem[];
 }

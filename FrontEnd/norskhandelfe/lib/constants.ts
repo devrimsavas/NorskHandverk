@@ -53,4 +53,5 @@ export const PATHS = {
   customer: (id: number) => `/Customer/${id}`,
   brand: (id: number) => `/Brand/${id}`,
   category: (id: number) => `/Category/${id}`,
+  carts: "/Cart",
 };

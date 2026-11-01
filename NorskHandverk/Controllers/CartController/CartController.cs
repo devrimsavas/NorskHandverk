@@ -30,7 +30,7 @@ namespace NorskHandverk.Controllers.CartController
         
         public async Task<ActionResult<ICollection<ReadCartDTO>>> GetCarts()
         {
-            var carts=await _dbContext.Carts.Include(c=>c.CartStatus).Include(c=>c.Customer).Include(c=>c.Items).ToListAsync();  
+            var carts=await _dbContext.Carts.Include(c=>c.CartStatus).Include(c=>c.Customer).Include(c=>c.Items).ThenInclude(i=>i.Product).ToListAsync();  
             var readDTos=_mapper.Map<ICollection<ReadCartDTO>>(carts);
             return Ok(readDTos);
 
