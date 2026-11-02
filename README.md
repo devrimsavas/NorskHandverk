@@ -1,3 +1,5 @@
+[![CI](https://github.com/devrimsavas/NorskHandverk/actions/workflows/ci.yml/badge.svg)](https://github.com/devrimsavas/NorskHandverk/actions/workflows/ci.yml)
+
 # NorskHandverk
 
 A full-stack web shop for handmade Norwegian crafts: wood, wool and clay. Customers browse products, fill a cart, pay with Stripe, follow their orders and cancel them with an automatic refund. Admins manage the catalog, customers and orders.
