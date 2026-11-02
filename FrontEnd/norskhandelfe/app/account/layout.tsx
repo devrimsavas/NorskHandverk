@@ -6,9 +6,9 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
 const tabs = [
-  { href: "/account", label: "Profile" },
-  { href: "/account/cart", label: "Cart" },
   { href: "/account/orders", label: "Orders" },
+  { href: "/account/cart", label: "Cart" },
+  { href: "/account/profile", label: "Profile" },
 ];
 
 export default function AccountLayout({ children }: { children: ReactNode }) {
