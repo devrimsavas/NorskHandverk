@@ -16,6 +16,9 @@ Most demo shops stop at the cart. The goal of NorskHandverk is the part that usu
 
 ![Home page and shop](docs/screenshots/shop.gif)
 
+**Admin Panel** 
+![Admin Panel](docs/screenshots/adminpanel.gif)
+
 ## Roadmap
 
 _Last updated: 2026-11-02_
