@@ -38,7 +38,12 @@ export default function AdminCartsPage() {
       if (response.ok) {
         const data: Cart[] = await response.json();
         // Newest carts have the highest ids
-        setCarts(data.sort((a, b) => b.id - a.id));
+        setCarts(
+          data.sort(
+            (a, b) =>
+              new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+          ),
+        );
       } else {
         setError("Could not load carts.");
       }
@@ -113,7 +118,8 @@ export default function AdminCartsPage() {
                     {cart.customerName}
                   </p>
                   <p className="text-xs text-muted">
-                    {cart.customerEmail} · #{cart.id}
+                    {cart.customerEmail} · #{cart.id} · last change{" "}
+                    {new Date(cart.updatedAt).toLocaleString("nb-NO")}
                   </p>
                 </div>
                 <span

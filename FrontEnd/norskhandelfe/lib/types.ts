@@ -48,9 +48,10 @@ export interface Cart {
   customerId: number;
   customerName: string;
   customerEmail: string;
-
   statusName: string;
   items: CartItem[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Matches ReadOrderItemDTO and ReadOrderDTO in the backend
