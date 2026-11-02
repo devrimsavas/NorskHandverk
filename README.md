@@ -54,9 +54,11 @@ _Last updated: 2026-11-02_
 - [x] Product image upload with type and size validation, behind a storage interface
 - [x] Order status workflow for admins (ordered, in progress, delivered)
 - [x] Norwegian VAT rates per category, validated on the server
-- [ ] Background job that releases stock from abandoned carts
-- [ ] Automated tests
-- [ ] Continuous integration with GitHub Actions
+- [x] Background job that releases stock from abandoned carts
+- [x] Mobile menu
+- [x] Unit tests for pricing and order status rules
+- [x] Integration tests against PostgreSQL, with Stripe replaced by a fake payment service
+- [x] Continuous integration with GitHub Actions (tests against PostgreSQL and a production frontend build on every push)
 - [ ] Deployment
 
 ## Tech Stack
@@ -69,11 +71,14 @@ _Last updated: 2026-11-02_
 - Swashbuckle (Swagger UI)
 - Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4
 - Stripe.js and React Stripe.js (Payment Element)
+- xUnit, `WebApplicationFactory` (integration tests)
+- GitHub Actions (CI with a PostgreSQL service container)
 
 ## Project Structure
 
 ```
 NorskHandverk/
+├── .github/workflows/ci.yml     # GitHub Actions: backend tests and frontend build
 ├── NorskHandverk/               # ASP.NET Core Web API
 │   ├── Controllers/             # Auth, Product, Brand, Category, Customer, Cart, Order
 │   ├── Data/                    # AdminSeeder (first admin user on startup)
@@ -82,8 +87,11 @@ NorskHandverk/
 │   ├── Mappings/                # AutoMapper profiles
 │   ├── Migrations/              # EF Core migrations
 │   ├── Models/                  # Entities, status enums, JwtSettings
-│   ├── Services/                # AuthService, OrderService, StripeService, LocalImageStorage
+│   ├── Services/                # Auth, orders, Stripe, image storage, abandoned cart job
 │   └── wwwroot/images/products/ # Product images, served as static files
+├── NorskHandverk.Tests/         # xUnit tests
+│   ├── Fakes/                   # FakePaymentService (replaces Stripe)
+│   └── Integration/             # API factory, helpers and integration tests
 └── FrontEnd/
     └── norskhandelfe/           # Next.js app
         ├── app/                 # Pages: shop, products, account, admin, login, register, payment
@@ -342,6 +350,75 @@ Statuses are lookup tables in the database, and the same values exist as C# enum
 | Order       | Canceled, Ordered, In Progress, Delivered, Awaiting Payment |
 | Cart        | Active, Checked Out, Abandoned, Completed                   |
 | Transaction | Pending, Success, Failed, Canceled, Refunded                |
+
+## Abandoned Carts
+
+Adding an item to a cart reserves its stock. If a customer leaves without paying, that stock would stay locked forever, and the shop could show a product as sold out without a single sale.
+
+A background job (`AbandonedCartJob`, an ASP.NET Core `BackgroundService`) solves this:
+
+- It runs once at startup and then on a fixed interval.
+- Active carts that have not changed for longer than the timeout are marked as **abandoned**, and their items go back into stock. The items stay in the cart for history.
+- Every cart change updates `UpdatedAt`, so a customer who is still shopping never loses their cart.
+- The logic lives in `AbandonedCartService`, separate from the timer, so it can be tested without waiting.
+- Each run opens its own DI scope, so it gets a fresh, short-lived `DbContext` instead of holding one open for the lifetime of the app.
+
+Both values are configured in `appsettings.json`:
+
+```json
+"AbandonedCarts": {
+  "TimeoutMinutes": 1440,
+  "CheckIntervalMinutes": 60
+}
+```
+
+## Testing
+
+The project has 24 automated tests: fast unit tests for the business rules, and integration tests that call the real API over HTTP.
+
+```bash
+dotnet test
+```
+
+### Test suites
+
+| Test class              | Type        | Database   | What it covers                                                                                                                                                    |
+| ----------------------- | ----------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PricingTests`          | Unit        | No         | Price including VAT, discount taken off the net price, all four Norwegian VAT rates                                                                               |
+| `OrderStatusRulesTests` | Unit        | No         | Allowed transitions (one step forward) and rejected ones (skipping, going back, unpaid orders, cancellation)                                                      |
+| `AuthApiTests`          | Integration | PostgreSQL | Admin login, wrong password (`401`), missing token (`401`), customer calling an admin endpoint (`403`)                                                            |
+| `OrderApiTests`         | Integration | PostgreSQL | Total calculated on the server, another customer's order (`404`), canceling an unpaid order, recovering a paid order whose webhook never arrived and refunding it |
+| `AbandonedCartTests`    | Integration | PostgreSQL | Old carts are abandoned and their stock returned, recent carts are left alone                                                                                     |
+
+### How the integration tests work
+
+- **The real API runs in memory** through `WebApplicationFactory<Program>`. Requests go through routing, JWT authentication, controllers, EF Core and PostgreSQL, exactly like in production.
+- **A separate test database** (`norskhandverk_test`) is deleted and rebuilt from the migrations before every run, so tests never touch real data. As a safety check, the factory refuses to run if the connection string does not point to a test database.
+- **Stripe is replaced by `FakePaymentService`**, which implements the same `IPaymentService` interface. It makes no network calls and records every cancel and refund, so tests can assert on them. It can also mark a payment as succeeded, which is how the "webhook never arrived" case is tested.
+- **The background job is removed** so it cannot change carts while tests run. Its logic is tested by calling `AbandonedCartService` directly.
+- **Tests create their own data** (category, brand, product, customers) through the API, with unique names, so they do not depend on each other or on existing data.
+- **JWT, admin and database settings are given by the factory**, so the tests do not need a local `appsettings.json` and run the same way in CI.
+
+### Running the integration tests locally
+
+The integration tests need PostgreSQL and a connection string in the `TEST_DB_CONNECTION` environment variable. The database is created by the tests:
+
+```powershell
+setx TEST_DB_CONNECTION "Host=localhost;Port=5432;Database=norskhandverk_test;Username=postgres;Password=<your-password>"
+```
+
+Restart Visual Studio or the terminal after `setx`, so the new variable is picked up.
+
+## Continuous Integration
+
+Every push and pull request to `master` runs a GitHub Actions workflow with two parallel jobs:
+
+| Job        | Steps                                                                                                             |
+| ---------- | ----------------------------------------------------------------------------------------------------------------- |
+| `backend`  | Starts a PostgreSQL 17 service container, restores and builds the solution, and runs all tests against it         |
+| `frontend` | Installs Node.js dependencies with `npm ci` and builds the Next.js app for production, catching TypeScript errors |
+
+No secrets are needed: the tests use a fake payment service and their own JWT and admin settings.
 
 ## License
 
