@@ -45,14 +45,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddCors(options =>
-    { options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyHeader()
-        .AllowAnyMethod()
-        .AllowAnyOrigin();
-    });
 
+// CORS: only the frontend origins listed in configuration may call the API from a browser
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", policy =>
+    {
+        policy.WithOrigins(allowedOrigins)
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
 });
 
 builder.Services.Configure<AbandonedCartSettings>(builder.Configuration.GetSection("AbandonedCarts"));
@@ -111,7 +115,7 @@ builder.Services.AddSingleton<IImageStorage, LocalImageStorage>();
 var app = builder.Build();
 // Create the first admin user if none exists
 await AdminSeeder.SeedAsync(app.Services);
-app.UseCors("AllowAll");
+app.UseCors("Frontend");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
