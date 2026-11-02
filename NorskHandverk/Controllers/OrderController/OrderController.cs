@@ -230,11 +230,12 @@ namespace NorskHandverk.Controllers.OrderController
 
 
         // Admins can only move an order one step forward: Ordered -> InProgress -> Delivered
-        private static readonly Dictionary<OrderStatusType, OrderStatusType> NextOrderStatus = new()
+        /*private static readonly Dictionary<OrderStatusType, OrderStatusType> NextOrderStatus = new()
 {
     { OrderStatusType.Ordered, OrderStatusType.InProgress },
     { OrderStatusType.InProgress, OrderStatusType.Delivered },
 };
+        */
 
         //UPDATE ORDER STATUS (admin)
         [Authorize(Roles = "Admin")]
@@ -253,7 +254,7 @@ namespace NorskHandverk.Controllers.OrderController
             }
 
             var currentStatus = (OrderStatusType)order.OrderStatusId;
-            if (!NextOrderStatus.TryGetValue(currentStatus, out var allowedNext) || allowedNext != newStatus)
+            if (!OrderStatusRules.CanMove(currentStatus, newStatus))
             {
                 return BadRequest(new { Message = $"An order cannot move from {currentStatus} to {newStatus}." });
             }
