@@ -27,6 +27,10 @@ example appsettings.json
     "Password": <your-password>",
     "Name": "Admin",
     "Surname": "NorskHandverk"
+  },
+  "AbandonedCarts": {
+    "TimeoutMinutes": 1440,
+    "CheckIntervalMinutes": 60
   }
 
 }

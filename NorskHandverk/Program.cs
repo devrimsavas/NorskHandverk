@@ -5,6 +5,7 @@ using Microsoft.OpenApi.Models;
 using NorskHandverk.Data;
 using NorskHandverk.Models;
 using NorskHandverk.Models.AuthModels;
+using NorskHandverk.Models.CartModels;
 using NorskHandverk.Models.ProductModels;
 using NorskHandverk.Services;
 //stripe 
@@ -19,6 +20,8 @@ builder.Services.AddScoped<IPaymentService, StripeService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<AbandonedCartService>();
+builder.Services.AddHostedService<AbandonedCartJob>();
 
 // JWT settings: bind the "Jwt" section for IOptions<JwtSettings>
 var jwtSection = builder.Configuration.GetSection("Jwt");
@@ -51,6 +54,8 @@ builder.Services.AddCors(options =>
     });
 
 });
+
+builder.Services.Configure<AbandonedCartSettings>(builder.Configuration.GetSection("AbandonedCarts"));
 
 // db context
 builder.Services.AddDbContext<AppDbContext>(options =>
