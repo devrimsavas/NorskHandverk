@@ -2,6 +2,7 @@ import Link from "next/link";
 import MainNav from "./MainNav";
 import AuthNav from "./AuthNav";
 import ThemeToggle from "./ThemeToggle";
+import MobileMenu from "./MobileMenu";
 
 const PageHeader = () => {
   return (
@@ -14,11 +15,20 @@ const PageHeader = () => {
           >
             NorskHandverk
           </Link>
-          <MainNav />
+          {/* Desktop only */}
+          <div className="hidden md:block">
+            <MainNav />
+          </div>
         </div>
+
         <div className="flex items-center gap-3">
           <ThemeToggle />
-          <AuthNav />
+          {/* Desktop only */}
+          <div className="hidden md:block">
+            <AuthNav />
+          </div>
+          {/* Mobile only */}
+          <MobileMenu />
         </div>
       </div>
     </header>
