@@ -38,4 +38,51 @@ public static class ApiTestHelpers
     {
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
     }
+
+    // Logs in as the seeded admin on a new client
+    public static async Task<HttpClient> CreateAdminClientAsync(NorskHandverkApiFactory factory)
+    {
+        var client = factory.CreateClient();
+        var admin = await LoginAsync(client, NorskHandverkApiFactory.AdminEmail, NorskHandverkApiFactory.AdminPassword);
+        client.UseToken(admin.Token);
+        return client;
+    }
+
+    // Creates a category, a brand and a product as admin, returns the product id
+    public static async Task<int> CreateProductAsync(HttpClient adminClient, decimal price, int quantity, decimal vatRate = 0.25m)
+    {
+        var unique = Guid.NewGuid().ToString("N")[..8];
+
+        var categoryResponse = await adminClient.PostAsJsonAsync("/api/Category", new
+        {
+            name = $"Category {unique}",
+            description = "Test category",
+            defaultVatRate = vatRate,
+        });
+        categoryResponse.EnsureSuccessStatusCode();
+        var category = await categoryResponse.Content.ReadFromJsonAsync<IdOnly>();
+
+        var brandResponse = await adminClient.PostAsJsonAsync("/api/Brand", new { name = $"Brand {unique}" });
+        brandResponse.EnsureSuccessStatusCode();
+        var brand = await brandResponse.Content.ReadFromJsonAsync<IdOnly>();
+
+        var productResponse = await adminClient.PostAsJsonAsync("/api/Product", new
+        {
+            title = $"Product {unique}",
+            description = "Test product",
+            price,
+            discount = 0,
+            quantity,
+            categoryId = category!.Id,
+            brandId = brand!.Id,
+        });
+        productResponse.EnsureSuccessStatusCode();
+        var product = await productResponse.Content.ReadFromJsonAsync<IdOnly>();
+
+        return product!.Id;
+    }
+
+    public record IdOnly(int Id);
+
+
 }
