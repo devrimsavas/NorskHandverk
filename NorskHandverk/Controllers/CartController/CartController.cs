@@ -163,8 +163,9 @@ namespace NorskHandverk.Controllers.CartController
                     };
                     existedCart.Items.Add(newItem);
                 }
+                existedCart.UpdatedAt = DateTime.UtcNow; 
                 //return reference existedCart
-                cartToReturn=existedCart;
+                cartToReturn =existedCart;
 
             }
             //create new cart
@@ -266,6 +267,7 @@ namespace NorskHandverk.Controllers.CartController
                 itemToRemove.Quantity-=removeCartItemDTO.QuantityToRemove;
 
             }
+            existedCart.UpdatedAt = DateTime.UtcNow;
             //save 
             await _dbContext.SaveChangesAsync();
             //return existed cart update
@@ -307,6 +309,7 @@ namespace NorskHandverk.Controllers.CartController
             }
             //remove all items from cart
             _dbContext.CartItems.RemoveRange(cart.Items); 
+            cart.UpdatedAt = DateTime.UtcNow;
             await _dbContext.SaveChangesAsync();
             //return dto 
             var readDTO = _mapper.Map<ReadCartDTO>(cart);
@@ -365,6 +368,7 @@ namespace NorskHandverk.Controllers.CartController
                 _dbContext.CartItems.Remove(product);
 
             }
+            cart.UpdatedAt = DateTime.UtcNow;
             await _dbContext.SaveChangesAsync();
             var readDTO=_mapper.Map<ReadCartDTO>(cart);
 

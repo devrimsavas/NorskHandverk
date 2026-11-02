@@ -156,6 +156,15 @@ namespace NorskHandverk.Models
                 .HasForeignKey (c=>c.CartStatusId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            //Cart dates: existing carts get the current time when the columns are added
+            modelBuilder.Entity<Cart>()
+                .Property(c => c.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            modelBuilder.Entity<Cart>()
+                .Property(c => c.UpdatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+
             //Transaction Amount precision
             modelBuilder.Entity<Transaction>()
                 .Property(t => t.Amount)

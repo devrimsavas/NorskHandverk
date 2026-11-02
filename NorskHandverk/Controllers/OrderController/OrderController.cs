@@ -155,6 +155,7 @@ namespace NorskHandverk.Controllers.OrderController
                     if (oldCart != null)
                     {
                         oldCart.CartStatusId = (int)CartStatusType.Active;
+                        oldCart.UpdatedAt = DateTime.UtcNow;    
                     }
                 }
 

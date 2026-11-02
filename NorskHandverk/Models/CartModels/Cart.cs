@@ -20,7 +20,10 @@ namespace NorskHandverk.Models.CartModels
 
         //cart items 
         public ICollection<CartItem> Items { get; set; }=new List<CartItem>();
-        
+        // When the cart was created and last changed, used to find abandoned carts
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
 
     }
 }
