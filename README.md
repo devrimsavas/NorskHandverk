@@ -26,7 +26,7 @@ Most demo shops stop at the cart. The goal of NorskHandverk is the part that usu
 
 ## Roadmap
 
-_Last updated: 2026-11-02_
+_Last updated: 2026-11-03_
 
 - [x] PostgreSQL database with Entity Framework Core migrations
 - [x] Data models: products, brands, categories, customers, carts, orders, transactions
@@ -59,6 +59,9 @@ _Last updated: 2026-11-02_
 - [x] Unit tests for pricing and order status rules
 - [x] Integration tests against PostgreSQL, with Stripe replaced by a fake payment service
 - [x] Continuous integration with GitHub Actions (tests against PostgreSQL and a production frontend build on every push)
+- [x] Configuration from environment variables: the same build runs locally and in production
+- [x] Image storage chosen by configuration: local disk in development, a private Backblaze B2 bucket with signed links in production
+- [x] Dockerfile for the API (multi-stage build)
 - [ ] Deployment
 
 ## Tech Stack
