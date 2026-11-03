@@ -13,7 +13,7 @@ namespace NorskHandverk.Mappings
             CreateMap<CartItem, ReadCartItemDTO>()
                 .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.ProductName))
                 .ForMember(dest => dest.ProductImage, opt => opt.MapFrom(src => src.Product != null ? src.Product.ProductImage : string.Empty))
-                .ForMember(dest => dest.ProductImageUrl, opt => opt.ConvertUsing<ProductImageUrlConverter, string?>(src => src.Product.ProductImage));
+                .ForMember(dest => dest.ProductImageUrl, opt => opt.ConvertUsing<ProductImageUrlConverter, string?>(src => src.Product != null ? src.Product.ProductImage : null));
 
             //find Name field in CartStatus and copy to the statusName in readCardDTO 
             CreateMap<Cart, ReadCartDTO>()
