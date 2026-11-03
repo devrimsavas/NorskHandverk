@@ -6,6 +6,7 @@ export interface Product {
   price: number;
   discount: number;
   productImage: string;
+  productImageUrl: string | null;
   priceIncVat: number;
   quantity: number;
   categoryId: number;
@@ -35,6 +36,7 @@ export interface CartItem {
   productId: number;
   productName: string;
   productImage: string;
+  productImageUrl: string | null;
   unitPrice: number;
   vatRate: number;
   quantity: number;

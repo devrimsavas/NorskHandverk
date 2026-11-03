@@ -1,8 +1,8 @@
 import Image from "next/image";
-import { productImageUrl } from "@/lib/format";
 
 interface ProductImageProps {
-  fileName: string;
+  // Full image URL from the backend, or null if the product has no image
+  src: string | null;
   alt: string;
   sizes: string;
   className?: string;
@@ -13,16 +13,14 @@ interface ProductImageProps {
 
 // Fills its parent, which must be "relative" and have a size
 const ProductImage = ({
-  fileName,
+  src,
   alt,
   sizes,
   className = "",
   priority,
   compact,
 }: ProductImageProps) => {
-  const imageUrl = productImageUrl(fileName);
-
-  if (!imageUrl) {
+  if (!src) {
     return (
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-surface-muted text-muted">
         <svg
@@ -46,7 +44,7 @@ const ProductImage = ({
 
   return (
     <Image
-      src={imageUrl}
+      src={src}
       alt={alt}
       fill
       sizes={sizes}

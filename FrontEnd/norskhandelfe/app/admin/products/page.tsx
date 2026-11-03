@@ -6,7 +6,7 @@ import Link from "next/link";
 import { apiFetch } from "@/lib/api";
 import { PATHS } from "@/lib/constants";
 import { Product } from "@/lib/types";
-import { formatPrice, productImageUrl } from "@/lib/format";
+import { formatPrice } from "@/lib/format";
 import ProductImage from "@/components/ProductImage";
 
 export default function AdminProductsPage() {
@@ -93,7 +93,7 @@ export default function AdminProductsPage() {
           </thead>
           <tbody className="divide-y divide-line text-ink">
             {products.map((product) => {
-              const imageUrl = productImageUrl(product.productImage);
+              
 
               return (
                 <tr key={product.id}>
@@ -101,7 +101,7 @@ export default function AdminProductsPage() {
                     <div className="flex items-center gap-3">
                       <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-surface-muted shrink-0">
                         <ProductImage
-                          fileName={product.productImage}
+                          src={product.productImageUrl}
                           alt={product.title}
                           sizes="48px"
                           compact

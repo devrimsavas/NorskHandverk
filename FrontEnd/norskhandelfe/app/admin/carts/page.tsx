@@ -141,7 +141,7 @@ export default function AdminCartsPage() {
                     >
                       <div className="relative w-10 h-10 rounded-md overflow-hidden shrink-0">
                         <ProductImage
-                          fileName={item.productImage}
+                          src={item.productImageUrl}
                           alt={item.productName}
                           sizes="40px"
                           compact

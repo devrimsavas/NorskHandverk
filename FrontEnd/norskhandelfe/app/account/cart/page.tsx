@@ -7,7 +7,7 @@ import { apiFetch } from "@/lib/api";
 import { PATHS } from "@/lib/constants";
 import { Cart } from "@/lib/types";
 import Image from "next/image";
-import { formatPrice, productImageUrl } from "@/lib/format";
+import { formatPrice } from "@/lib/format";
 import ProductImage from "@/components/ProductImage";
 
 export default function CartPage() {
@@ -110,7 +110,7 @@ export default function CartPage() {
           >
             <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-surface-muted shrink-0">
               <ProductImage
-                fileName={item.productImage}
+                src={item.productImageUrl}
                 alt={item.productName}
                 sizes="64px"
                 compact

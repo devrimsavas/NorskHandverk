@@ -7,5 +7,7 @@
 
         Task DeleteProductImageAsync(string fileName);
 
+        // Returns a full URL the browser can load, or null if there is no image
+        string? GetProductImageUrl(string? fileName);
     }
 }

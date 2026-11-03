@@ -5,6 +5,7 @@
         public int ProductId { get; set; }
         public string ProductName { get; set; }
         public string ProductImage { get; set; } = string.Empty;
+        public string? ProductImageUrl { get; set; }
         public decimal UnitPrice { get; set; }
         public decimal VatRate {  get; set; }
         public int Quantity { get; set; }

@@ -4,9 +4,12 @@
     public class LocalImageStorage : IImageStorage
     {
         private readonly string _folder;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public LocalImageStorage(IWebHostEnvironment environment)
+        public LocalImageStorage(IWebHostEnvironment environment, IHttpContextAccessor httpContextAccessor)
         {
+            _httpContextAccessor = httpContextAccessor;
+
             var webRoot = environment.WebRootPath ?? Path.Combine(environment.ContentRootPath, "wwwroot");
             _folder = Path.Combine(webRoot, "images", "products");
             Directory.CreateDirectory(_folder);
@@ -33,6 +36,23 @@
                 File.Delete(path);
             }
             return Task.CompletedTask;
+        }
+
+        public string? GetProductImageUrl(string? fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                return null;
+            }
+
+            // Build the URL from the current request, e.g. https://localhost:7140/images/products/abc.jpg
+            var request = _httpContextAccessor.HttpContext?.Request;
+            if (request == null)
+            {
+                return null;
+            }
+
+            return $"{request.Scheme}://{request.Host}/images/products/{fileName}";
         }
     }
 }

@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { PATHS } from "@/lib/constants";
 import { Brand, Category, Product } from "@/lib/types";
-import { formatPrice, productImageUrl } from "@/lib/format";
+import { formatPrice } from "@/lib/format";
 
 interface ProductFormProps {
   // Missing when creating a new product
@@ -99,8 +99,7 @@ const ProductForm = ({ product }: ProductFormProps) => {
         (1 + selectedCategory.defaultVatRate)
       : null;
 
-  const currentImageUrl =
-    previewUrl ?? (product ? productImageUrl(product.productImage) : null);
+  const currentImageUrl = previewUrl ?? product?.productImageUrl ?? null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

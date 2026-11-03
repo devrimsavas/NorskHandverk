@@ -7,7 +7,7 @@ import { useParams } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { PATHS } from "@/lib/constants";
 import { Product } from "@/lib/types";
-import { formatPrice, productImageUrl } from "@/lib/format";
+import { formatPrice } from "@/lib/format";
 import { useAuth } from "@/context/AuthContext";
 import ProductImage from "@/components/ProductImage";
 
@@ -104,7 +104,6 @@ export default function ProductDetailPage() {
     );
   }
 
-  const imageUrl = productImageUrl(product.productImage);
   const isSoldOut = product.status === "Out_Of_Stock" || product.quantity === 0;
 
   return (
@@ -117,7 +116,7 @@ export default function ProductDetailPage() {
         <div className="mt-6 grid md:grid-cols-2 gap-10">
           <div className="relative aspect-square rounded-2xl overflow-hidden bg-surface-muted">
             <ProductImage
-              fileName={product.productImage}
+              src={product.productImageUrl}
               alt={product.title}
               sizes="(min-width: 768px) 50vw, 100vw"
               priority

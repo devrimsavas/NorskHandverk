@@ -14,7 +14,9 @@ namespace NorskHandverk.Mappings
                 .ForMember(d => d.BrandName,
                 o => o.MapFrom(s => s.Brand.Name))
                 .ForMember(d => d.Status,
-                o => o.MapFrom(s => s.Status.ToString()));
+                o => o.MapFrom(s => s.Status.ToString()))
+                .ForMember(d => d.ProductImageUrl,
+                o => o.ConvertUsing<ProductImageUrlConverter, string?>(s => s.ProductImage));
 
 
 

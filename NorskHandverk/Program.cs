@@ -7,6 +7,7 @@ using NorskHandverk.Models;
 using NorskHandverk.Models.AuthModels;
 using NorskHandverk.Models.CartModels;
 using NorskHandverk.Models.ProductModels;
+using NorskHandverk.Models.StorageModels;
 using NorskHandverk.Services;
 //stripe 
 using Stripe;
@@ -110,7 +111,19 @@ builder.Services.AddSwaggerGen(options =>
 
 });
 
-builder.Services.AddSingleton<IImageStorage, LocalImageStorage>();  
+builder.Services.AddHttpContextAccessor();
+
+// Use Backblaze B2 when the "B2Storage" section is configured (production), otherwise local disk
+var b2Section = builder.Configuration.GetSection("B2Storage");
+if (b2Section.Exists())
+{
+    builder.Services.Configure<B2StorageSettings>(b2Section);
+    builder.Services.AddSingleton<IImageStorage, B2ImageStorage>();
+}
+else
+{
+    builder.Services.AddSingleton<IImageStorage, LocalImageStorage>();
+}
 
 var app = builder.Build();
 // Create the first admin user if none exists
