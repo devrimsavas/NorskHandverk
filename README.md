@@ -4,13 +4,13 @@
 
 A full-stack web shop for handmade Norwegian crafts: wood, wool and clay. Customers browse products, fill a cart, pay with Stripe, follow their orders and cancel them with an automatic refund. Admins manage the catalog, customers and orders.
 
+**Live demo:** [norsk-handverk.vercel.app](https://norsk-handverk.vercel.app) · **API:** [norskhandverk-api.onrender.com/api/Product](https://norskhandverk-api.onrender.com/api/Product)
+
 > Demo project: no real orders are shipped, and payments run in Stripe test mode. Pay with the test card `4242 4242 4242 4242`, any future expiry date and any CVC.
 
 ## Why This Project
 
 Most demo shops stop at the cart. The goal of NorskHandverk is the part that usually gets skipped: a payment flow that stays correct when real things go wrong. A customer refreshes the checkout page, a webhook arrives late or never, a payment is canceled in Stripe, an order is canceled after it was paid. Every one of these cases is handled on the server, and the order, cart, stock and transaction records always end up consistent with what happened in Stripe.
-
-> Work in progress.
 
 ### Screenshots
 
@@ -62,7 +62,9 @@ _Last updated: 2026-11-03_
 - [x] Configuration from environment variables: the same build runs locally and in production
 - [x] Image storage chosen by configuration: local disk in development, a private Backblaze B2 bucket with signed links in production
 - [x] Dockerfile for the API (multi-stage build)
-- [ ] Deployment
+- [x] Deployment: API on Render (Docker), frontend on Vercel, PostgreSQL on Aiven, product images on Backblaze B2
+- [x] Production Stripe webhook endpoint with its own signing secret
+- [x] Privacy-friendly visitor statistics with GoatCounter (production only)
 
 ## Tech Stack
 
@@ -76,6 +78,10 @@ _Last updated: 2026-11-03_
 - Stripe.js and React Stripe.js (Payment Element)
 - xUnit, `WebApplicationFactory` (integration tests)
 - GitHub Actions (CI with a PostgreSQL service container)
+- Docker (multi-stage build for the API)
+- Render (API), Vercel (frontend), Aiven (PostgreSQL)
+- Backblaze B2 through its S3-compatible API (AWSSDK.S3)
+- GoatCounter (visitor statistics)
 
 ## Project Structure
 
@@ -274,7 +280,8 @@ Once an order is in progress, customers can no longer cancel it.
 - `POST /api/Product/{id}/image` accepts a JPG, PNG or WebP file up to 5 MB as `multipart/form-data`.
 - **Uploaded file names are never used.** Each image is saved under a random name, which prevents overwriting another product's image and path traversal attempts such as `../appsettings.json`.
 - **The new image is saved before the old one is deleted**, so a failed upload never leaves a product without its image.
-- **Storage sits behind `IImageStorage`.** `LocalImageStorage` writes to `wwwroot`. Moving to cloud storage such as Backblaze B2 or S3 only needs a new implementation, the controller stays the same.
+- **Storage sits behind `IImageStorage`, chosen by configuration.** Without a `B2Storage` section, `LocalImageStorage` writes to `wwwroot` (development). With it, `B2ImageStorage` uploads to a private Backblaze B2 bucket (production). The controller is the same in both cases.
+- **The bucket is private.** The API returns a signed link for every image (`productImageUrl`) that expires after 60 minutes. A fresh link is created on every request, so the frontend never builds image URLs itself.
 - Products without an image show an "Image coming soon" placeholder instead of a broken image.
 
 ## Authentication and Authorization
@@ -422,6 +429,34 @@ Every push and pull request to `master` runs a GitHub Actions workflow with two 
 | `frontend` | Installs Node.js dependencies with `npm ci` and builds the Next.js app for production, catching TypeScript errors |
 
 No secrets are needed: the tests use a fake payment service and their own JWT and admin settings.
+
+## Deployment
+
+| Part     | Host         | Notes                                                                                         |
+| -------- | ------------ | --------------------------------------------------------------------------------------------- |
+| API      | Render       | Built from `NorskHandverk/Dockerfile`, redeployed on every push that changes the API          |
+| Frontend | Vercel       | Next.js app in `FrontEnd/norskhandelfe`, redeployed on every push that changes it             |
+| Database | Aiven        | Managed PostgreSQL with SSL, connection pool limited to 5                                     |
+| Images   | Backblaze B2 | Private bucket, accessed through the S3-compatible API with signed links                      |
+| Payments | Stripe       | Test mode, webhook endpoint `POST /api/Order/webhook` listening to `payment_intent.succeeded` |
+
+The same code runs locally and in production. Everything that differs comes from environment variables, which override `appsettings.json`:
+
+```
+ASPNETCORE_ENVIRONMENT=Production
+ConnectionStrings__DefaultConnection=...
+Jwt__SecretKey=...  Jwt__Issuer=...  Jwt__Audience=...  Jwt__ExpiryMinutes=...
+Stripe__SecretKey=...  Stripe__PublishableKey=...  Stripe__WebhookSecret=...
+AdminUser__Email=...  AdminUser__Password=...
+B2Storage__ServiceUrl=...  B2Storage__BucketName=...  B2Storage__KeyId=...  B2Storage__ApplicationKey=...
+Cors__AllowedOrigins__0=https://norsk-handverk.vercel.app
+PORT=8080
+```
+
+- **Migrations** are applied once from a developer machine with `Update-Database -Connection "..."`. The API does not migrate on startup.
+- **The first admin** is created on the first start from the `AdminUser__*` variables, only if no admin exists yet.
+- **CORS** only allows the frontend's production URL.
+- The Render free tier sleeps after 15 minutes without requests. A scheduled job pings the API every 10 minutes to keep it awake.
 
 ## License
 
