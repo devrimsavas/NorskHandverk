@@ -4,6 +4,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import "./globals.css";
 import PageHeader from "@/components/PageHeader";
 import PageFooter from "@/components/PageFooter";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,7 +23,8 @@ export const metadata: Metadata = {
 
 // Applies the saved theme before the page is painted, so dark mode does not flash white
 const themeScript = `(function(){try{var t=localStorage.getItem('norskhandverk_theme');var d=t?t==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;if(d)document.documentElement.classList.add('dark');}catch(e){}})();`;
-
+// Only set in production (Vercel), so local visits are not counted
+const goatCounterUrl = process.env.NEXT_PUBLIC_GOATCOUNTER_URL;
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -41,6 +43,13 @@ export default function RootLayout({
           <div className="pt-16 flex-1">{children}</div>
           <PageFooter />
         </AuthProvider>
+        {goatCounterUrl && (
+          <Script
+            data-goatcounter={goatCounterUrl}
+            src="https://gc.zgo.at/count.js"
+            strategy="afterInteractive"
+          />
+        )}
       </body>
     </html>
   );
