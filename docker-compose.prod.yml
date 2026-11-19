@@ -1,0 +1,16 @@
+services:
+  api:
+    build: ./NorskHandverk
+    image: norskhandverk-api
+    restart: unless-stopped
+    env_file: .env
+    # Only reachable from the server itself; Cloudflare Tunnel forwards public traffic here
+    ports:
+      - "127.0.0.1:8002:8080"
+    # The ASP.NET runtime image has no curl, so the check only confirms the port accepts connections
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8080"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
